@@ -10,6 +10,9 @@ using Java.Lang;
 using System.Drawing;
 using Android.Graphics;
 using System.IO;
+using Android;
+using Android.Support.V4.Content;
+using Android.Support.V4.App;
 
 namespace CameraRemote
 {
@@ -17,6 +20,7 @@ namespace CameraRemote
     [Activity(Label = "@string/app_name", Theme = "@style/AppTheme", MainLauncher = true)]
     public class MainActivity : AppCompatActivity
     {
+        private const int RequestCode = 1;
         Button btCamera;Button btGetCon;
         TextView tvStatus;
         ListView lvDevices;
@@ -33,6 +37,7 @@ namespace CameraRemote
         [Obsolete]
         protected override void OnCreate(Bundle savedInstanceState)
         {
+            RequestPermissions();
             base.OnCreate(savedInstanceState);
             // Set our view from the "main" layout resource
             SetContentView(Resource.Layout.activity_main);
@@ -44,7 +49,11 @@ namespace CameraRemote
             ArrayAdapter<string> arrayAdapter = new ArrayAdapter<string>
                             (ApplicationContext, Android.Resource.Layout.SimpleListItem1, AllDevices);
             lvDevices.SetAdapter(arrayAdapter);
+        }
 
+        private void RequestPermissions()
+        {
+            ActivityCompat.RequestPermissions(this, new string[] { Manifest.Permission.Camera }, 1);
         }
 
         #region ButtonsClick
