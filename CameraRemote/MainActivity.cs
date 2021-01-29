@@ -13,6 +13,7 @@ using System.IO;
 using Android;
 using Android.Support.V4.Content;
 using Android.Support.V4.App;
+using Android.Runtime;
 
 namespace CameraRemote
 {
@@ -20,7 +21,6 @@ namespace CameraRemote
     [Activity(Label = "@string/app_name", Theme = "@style/AppTheme", MainLauncher = true)]
     public class MainActivity : AppCompatActivity
     {
-        private const int RequestCode = 1;
         Button btCamera;Button btGetCon;
         TextView tvStatus;
         ListView lvDevices;
@@ -50,7 +50,6 @@ namespace CameraRemote
                             (ApplicationContext, Android.Resource.Layout.SimpleListItem1, AllDevices);
             lvDevices.SetAdapter(arrayAdapter);
         }
-
         private void RequestPermissions()
         {
             ActivityCompat.RequestPermissions(this, new string[] { Manifest.Permission.Camera }, 1);
@@ -118,11 +117,9 @@ namespace CameraRemote
         private string GetDeviceIpRole(string s)
         {
             string[] data = s.Split(SEPERATOR);
-            string command = data[0];
-            string role = data[2];
             for (int i = 2; data[1][i] != "'"[0]; i++)
                 device_ip += data[1][i];
-            return command + SEPERATOR + role;
+            return data[0] + SEPERATOR + data[2];
         }
         #endregion
 
