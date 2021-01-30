@@ -2,7 +2,7 @@ import socket
 import threading
 from _thread import *
 
-IP = "192.168.1.28"
+IP = "192.168.1.18"
 PORT = 8820
 CHUNK = 1024
 SEPARATOR = "###"
@@ -67,6 +67,7 @@ def main():
                 if key != data:
                     send(cs, key + "###")
                     print("send to", data, key + "###")
+            send_except_one("ADDD"+SEPARATOR+data)
             send(cs, "ENDD")
         except socket.error:
             pass

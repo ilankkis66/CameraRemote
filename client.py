@@ -1,6 +1,6 @@
 import socket
 
-IP = "192.168.1.28"
+IP = "192.168.1.18"
 PORT = 8820
 CHUNK = 1024
 SEPARATOR = "###"

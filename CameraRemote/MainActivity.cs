@@ -14,6 +14,7 @@ using Android;
 using Android.Support.V4.Content;
 using Android.Support.V4.App;
 using Android.Runtime;
+using System.Collections.Generic;
 
 namespace CameraRemote
 {
@@ -29,11 +30,10 @@ namespace CameraRemote
         const int CHUNK = 1024;
         const string SEPERATOR = "###";
         string device_ip = "";
-        string[] AllDevices;
+        List<string> AllDevices;
         string[] IpRole;
         NetworkStream ServerStream;
         TcpClient ServerTCP;
-
         [Obsolete]
         protected override void OnCreate(Bundle savedInstanceState)
         {
@@ -42,14 +42,36 @@ namespace CameraRemote
             // Set our view from the "main" layout resource
             SetContentView(Resource.Layout.activity_main);
             ServerTCP = new TcpClient(SERVER_IP, SERVER_PORT);
+            ServerTCP.ReceiveTimeout = 500;
             ServerStream = ServerTCP.GetStream();
             InitWidgets();
             SendData(GetDeviceName(), ServerStream);
-            AllDevices = GetAllDevices(ServerStream);
+            GetAllDevices(ServerStream);
             ArrayAdapter<string> arrayAdapter = new ArrayAdapter<string>
                             (ApplicationContext, Android.Resource.Layout.SimpleListItem1, AllDevices);
             lvDevices.SetAdapter(arrayAdapter);
         }
+
+        protected override void OnActivityResult(int requestCode, [GeneratedEnum] Result resultCode, Intent data)
+        {
+            base.OnActivityResult(requestCode, resultCode, data);
+            string s = "";
+            try{s = ReceiveData(ServerStream);}
+            catch { }
+            if (s.StartsWith("ADDD"))
+            {
+                AllDevices.Add(s.Substring(7));
+                ArrayAdapter<string> arrayAdapter = new ArrayAdapter<string>
+                            (ApplicationContext, Android.Resource.Layout.SimpleListItem1, AllDevices);
+                lvDevices.SetAdapter(arrayAdapter);
+            }
+            else if (s.StartsWith("DADR"))
+            {
+
+            }
+
+        }
+
         private void RequestPermissions()
         {
             ActivityCompat.RequestPermissions(this, new string[] { Manifest.Permission.Camera }, 1);
@@ -59,8 +81,10 @@ namespace CameraRemote
         [Obsolete]
         private void LvDevices_ItemClick(object sender, AdapterView.ItemClickEventArgs e)
         {
-            SendData("COND" + SEPERATOR + AllDevices[e.Id], ServerStream);
-            string s = ReceiveData(ServerStream);
+            SendData("COND" + SEPERATOR + AllDevices[(int)e.Id], ServerStream);
+            string s = "";
+            while(s=="")
+                s = ReceiveData(ServerStream);
             if (s.Substring(0, 4) == "DADR")
             {
                 IpRole = GetDeviceIpRole(s).Split(SEPERATOR);
@@ -78,7 +102,9 @@ namespace CameraRemote
 
         private void BtGetCon_Click(object sender, EventArgs e)
         {
-            string s = ReceiveData(ServerStream);
+            string s = "";
+            while(s=="")
+                s = ReceiveData(ServerStream);
             if (s.Substring(0, 4) == "DADR")
             {
                 IpRole = GetDeviceIpRole(s).Split(SEPERATOR);
@@ -86,7 +112,9 @@ namespace CameraRemote
                 {
                     TcpClient tcp_device = new TcpClient(device_ip, 6666);
                     NetworkStream stream_device = tcp_device.GetStream();
-                    string t = ReceiveData(stream_device);
+                    string t = "";
+                    while(t=="")
+                        t = ReceiveData(ServerStream);
                     tvStatus.Text = "received------>" + t;
                 }
             }
@@ -99,12 +127,15 @@ namespace CameraRemote
         #endregion
 
         #region GetMethod
-        private string[] GetAllDevices(NetworkStream stream)
+        private void GetAllDevices(NetworkStream stream)
         {
             string d = "";
             while (!d.EndsWith("ENDD"))
                 d += ReceiveData(stream);
-            return d.Substring(0,d.Length-4).Split(SEPERATOR);
+            string[] a = d.Substring(0,d.Length-4).Split(SEPERATOR);
+            AllDevices = new List<string>();
+            for (int i = 0; i < a.Length; i++)
+                AllDevices.Add(a[i]);
         }
         public static string GetDeviceName()
         {
@@ -150,7 +181,8 @@ namespace CameraRemote
         {
             byte[] data = new byte[CHUNK];
             string s = "";
-            stream.Read(data);
+            try{stream.Read(data);}
+            catch{return "";}
             for (int i = 0; data[i] != 0; i++)
                 s += (char)data[i];
             return s;
