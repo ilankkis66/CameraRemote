@@ -67,12 +67,13 @@ def main():
                 if key != data:
                     send(cs, key + "###")
                     print("send to", data, key + "###")
-            send_except_one("ADDD"+SEPARATOR+data)
+            send_except_one("ADDD" + SEPARATOR + data, data)
             send(cs, "ENDD")
         except socket.error:
             pass
         try:
-            start_new_thread(handle_client, (connected_devices[data][0],))
+            for key in get_keys_list(connected_devices):
+                start_new_thread(handle_client, (connected_devices[key][0],))
         except KeyError:
             pass
 
