@@ -22,8 +22,8 @@ namespace CameraRemote
     [Activity(Label = "@string/app_name", Theme = "@style/AppTheme", MainLauncher = true)]
     public class MainActivity : AppCompatActivity
     {
-        Button btCamera;Button btGetCon;
-        TextView tvStatus;
+        Button btCamera;Button btGetCon; Button btnTakePic;
+        TextView tvStatus, tv;
         ListView lvDevices;
         const string SERVER_IP = "192.168.1.28";
         const int SERVER_PORT = 8820;
@@ -34,25 +34,30 @@ namespace CameraRemote
         string[] IpRole;
         NetworkStream ServerStream;
         TcpClient ServerTCP;
+        ImageView iv;
+        bool mExternalStorageAvailable = false;
+        bool mExternalStorageWriteable = false;
         [Obsolete]
         protected override void OnCreate(Bundle savedInstanceState)
         {
-            RequestPermissions();
+            setPermissitios();
             base.OnCreate(savedInstanceState);
             // Set our view from the "main" layout resource
             SetContentView(Resource.Layout.activity_main);
-            ServerTCP = new TcpClient(SERVER_IP, SERVER_PORT);
+            InitWidgets();
+            /*ServerTCP = new TcpClient(SERVER_IP, SERVER_PORT);
             ServerTCP.ReceiveTimeout = 500;
             ServerStream = ServerTCP.GetStream();
-            InitWidgets();
             SendData(GetDeviceName(), ServerStream);
             GetAllDevices(ServerStream);
             ArrayAdapter<string> arrayAdapter = new ArrayAdapter<string>
                             (ApplicationContext, Android.Resource.Layout.SimpleListItem1, AllDevices);
-            lvDevices.SetAdapter(arrayAdapter);
+            lvDevices.SetAdapter(arrayAdapter);*/
         }
 
-        protected override void OnActivityResult(int requestCode, [GeneratedEnum] Result resultCode, Intent data)
+        [Obsolete]
+        #region 
+        /*protected override void OnActivityResult(int requestCode, [GeneratedEnum] Result resultCode, Intent data)
         {
             base.OnActivityResult(requestCode, resultCode, data);
             string s = "";
@@ -70,8 +75,82 @@ namespace CameraRemote
 
             }
 
+        }*/
+        #endregion
+
+        public void setPermissitios()
+        {
+            string state = Android.OS.Environment.ExternalStorageState;
+
+            if (Android.OS.Environment.MediaMounted.Equals(state))
+            {
+                //We can read and write the media
+                mExternalStorageAvailable = mExternalStorageWriteable = true;
+                Toast.MakeText(this, "We can read and write the media", ToastLength.Long).Show();
+            }
+
+            else if (Android.OS.Environment.MediaMountedReadOnly.Equals(state))
+            {
+                //We can only read the media
+                mExternalStorageAvailable = true;
+                mExternalStorageWriteable = false;
+                Toast.MakeText(this, "We can only read the media", ToastLength.Long).Show();
+            }
+            else
+            {
+                //Something else is wrong. we can neither read nor write
+                mExternalStorageAvailable = mExternalStorageWriteable = false;
+                Toast.MakeText(this, "Something else is wrong. we can neither read nor write", ToastLength.Long).Show();
+            }
+
         }
 
+
+        protected override void OnActivityResult(int requestCode, Result resultCode, Intent data)
+        {
+            base.OnActivityResult(requestCode, resultCode, data);
+            if (requestCode == 0)//coming from camera
+            {
+                if (resultCode == Result.Ok)
+                {
+                    Android.Graphics.Bitmap bitmap = (Android.Graphics.Bitmap)data.Extras.Get("data");
+                    iv.SetImageBitmap(bitmap);
+                    saveImageToExternalStorage_version1(bitmap);
+                }
+            }
+        }
+        private void saveImageToExternalStorage_version1(Android.Graphics.Bitmap finalBitmap)
+        {
+            string root = Android.OS.Environment.GetExternalStoragePublicDirectory(Android.OS.Environment.DirectoryPictures).ToString();
+            Java.IO.File myDir = new Java.IO.File(root + "/saved_images");
+            myDir.Mkdirs();
+            Random generator = new Random();
+            int n = 10000;
+            n = generator.Next(n);
+            string fname = "Image-" + n + ".jpg";
+            Java.IO.File file = new Java.IO.File(myDir, fname);
+            if (file.Exists())
+                file.Delete();
+            try
+            {
+                string path = System.IO.Path.Combine(myDir.AbsolutePath, fname);
+                var fs = new FileStream(path, FileMode.Create);
+                if (fs != null)
+                {
+                    finalBitmap.Compress(Android.Graphics.Bitmap.CompressFormat.Png, 90, fs);
+                    tv.Text = myDir.AbsolutePath;
+                }
+                fs.Flush();
+                fs.Close();
+            }
+
+            catch (System.Exception e)
+            {
+                tv.Text = e.ToString();
+                Toast.MakeText(this, e.ToString(), ToastLength.Long).Show();
+            }
+
+        }
         private void RequestPermissions()
         {
             ActivityCompat.RequestPermissions(this, new string[] { Manifest.Permission.Camera }, 1);
@@ -99,7 +178,6 @@ namespace CameraRemote
                 }
             }
         }
-
         private void BtGetCon_Click(object sender, EventArgs e)
         {
             string s = "";
@@ -119,10 +197,14 @@ namespace CameraRemote
                 }
             }
         }
-        
         private void BtCamera_Click(object sender, EventArgs e)
         {
             CameraClick();
+        }
+        private void BtnTakePic_Click(object sender, EventArgs e)
+        {
+            Intent intent = new Intent("android.media.action.IMAGE_CAPTURE");
+            StartActivityForResult(intent, 0);
         }
         #endregion
 
@@ -161,10 +243,16 @@ namespace CameraRemote
             btGetCon = (Button)FindViewById(Resource.Id.getCon);
             tvStatus = (TextView)FindViewById(Resource.Id.tvStatus);
             lvDevices = (ListView)FindViewById(Resource.Id.lvDeviecs);
+            btnTakePic = (Button)FindViewById(Resource.Id.btnTakePic);
+            iv = FindViewById<ImageView>(Resource.Id.iv);
+            tv = FindViewById<TextView>(Resource.Id.tvPathFile);
             btCamera.Click += BtCamera_Click;
             btGetCon.Click += BtGetCon_Click;
+            btnTakePic.Click += BtnTakePic_Click;
             lvDevices.ItemClick += LvDevices_ItemClick;
         }
+
+
         private void CameraClick()
         {
             Intent intent = new Intent("android.media.action.IMAGE_CAPTURE");

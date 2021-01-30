@@ -34,4 +34,26 @@
         android:layout_height="wrap_content"
         android:layout_x="0dp"
         android:layout_y="200dp"/>
+
+
+    <ImageView
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_x="150dp"
+        android:layout_y="200dp"
+        android:id="@+id/iv" />
+    <Button
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:id="@+id/btnTakePic"
+        android:text="Take picture" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/tvPathFile"
+        android:text="path"
+        android:layout_x="0dp"
+        android:layout_y="350dp"
+        android:textColor="#000" />
 </AbsoluteLayout>
