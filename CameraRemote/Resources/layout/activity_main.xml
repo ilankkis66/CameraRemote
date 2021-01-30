@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
     <Button
-        android:id="@+id/camera"
+        android:id="@+id/btnTakePic"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_x="150dp"
@@ -34,19 +34,12 @@
         android:layout_height="wrap_content"
         android:layout_x="0dp"
         android:layout_y="200dp"/>
-
-
     <ImageView
         android:layout_width="100dp"
         android:layout_height="100dp"
         android:layout_x="150dp"
-        android:layout_y="200dp"
+        android:layout_y="400dp"
         android:id="@+id/iv" />
-    <Button
-        android:layout_height="wrap_content"
-        android:layout_width="match_parent"
-        android:id="@+id/btnTakePic"
-        android:text="Take picture" />
 
     <TextView
         android:layout_width="match_parent"

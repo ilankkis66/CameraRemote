@@ -43,14 +43,14 @@ namespace CameraRemote
             // Set our view from the "main" layout resource
             SetContentView(Resource.Layout.activity_main);
             InitWidgets();
-            /*ServerTCP = new TcpClient(SERVER_IP, SERVER_PORT);
+            ServerTCP = new TcpClient(SERVER_IP, SERVER_PORT);
             ServerTCP.ReceiveTimeout = 500;
             ServerStream = ServerTCP.GetStream();
             SendData(GetDeviceName(), ServerStream);
             GetAllDevices(ServerStream);
             ArrayAdapter<string> arrayAdapter = new ArrayAdapter<string>
                             (ApplicationContext, Android.Resource.Layout.SimpleListItem1, AllDevices);
-            lvDevices.SetAdapter(arrayAdapter);*/
+            lvDevices.SetAdapter(arrayAdapter);
         }
 
         [Obsolete]
@@ -145,10 +145,6 @@ namespace CameraRemote
             }
 
         }
-        private void RequestPermissions()
-        {
-            ActivityCompat.RequestPermissions(this, new string[] { Manifest.Permission.Camera }, 1);
-        }
 
         #region ButtonsClick
         [Obsolete]
@@ -191,11 +187,6 @@ namespace CameraRemote
                 }
             }
         }
-        private void BtCamera_Click(object sender, EventArgs e)
-        {
-            Intent intent = new Intent("android.media.action.IMAGE_CAPTURE");
-            StartActivity(intent);
-        }
         private void BtnTakePic_Click(object sender, EventArgs e)
         {
             Intent intent = new Intent(Android.Provider.MediaStore.ActionImageCapture);
@@ -211,7 +202,7 @@ namespace CameraRemote
                 d += ReceiveData(stream);
             string[] a = d.Substring(0,d.Length-4).Split(SEPERATOR);
             AllDevices = new List<string>();
-            for (int i = 0; i < a.Length; i++)
+            for (int i = 0; i < a.Length-1; i++)
                 AllDevices.Add(a[i]);
         }
         public static string GetDeviceName()
@@ -234,14 +225,12 @@ namespace CameraRemote
         [Obsolete]
         private void InitWidgets()
         {
-            btCamera = (Button)FindViewById(Resource.Id.camera);
             btGetCon = (Button)FindViewById(Resource.Id.getCon);
             tvStatus = (TextView)FindViewById(Resource.Id.tvStatus);
             lvDevices = (ListView)FindViewById(Resource.Id.lvDeviecs);
             btnTakePic = (Button)FindViewById(Resource.Id.btnTakePic);
             iv = (ImageView)FindViewById(Resource.Id.iv);
             tv = (TextView)FindViewById(Resource.Id.tvPathFile);
-            btCamera.Click += BtCamera_Click;
             btGetCon.Click += BtGetCon_Click;
             btnTakePic.Click += BtnTakePic_Click;
             lvDevices.ItemClick += LvDevices_ItemClick;
