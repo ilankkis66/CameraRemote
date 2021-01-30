@@ -25,16 +25,14 @@ namespace CameraRemote
         Button btCamera;Button btGetCon; Button btnTakePic;
         TextView tvStatus, tv;
         ListView lvDevices;
+        ImageView iv;
         const string SERVER_IP = "192.168.1.28";
-        const int SERVER_PORT = 8820;
-        const int CHUNK = 1024;
+        const int SERVER_PORT = 8820; const int CHUNK = 1024;
         const string SEPERATOR = "###";
         string device_ip = "";
         List<string> AllDevices;
         string[] IpRole;
-        NetworkStream ServerStream;
-        TcpClient ServerTCP;
-        ImageView iv;
+        NetworkStream ServerStream; TcpClient ServerTCP;
         bool mExternalStorageAvailable = false;
         bool mExternalStorageWriteable = false;
         [Obsolete]
@@ -56,7 +54,7 @@ namespace CameraRemote
         }
 
         [Obsolete]
-        #region 
+        #region activty main proj
         /*protected override void OnActivityResult(int requestCode, [GeneratedEnum] Result resultCode, Intent data)
         {
             base.OnActivityResult(requestCode, resultCode, data);
@@ -81,7 +79,6 @@ namespace CameraRemote
         public void setPermissitios()
         {
             string state = Android.OS.Environment.ExternalStorageState;
-
             if (Android.OS.Environment.MediaMounted.Equals(state))
             {
                 //We can read and write the media
@@ -104,8 +101,6 @@ namespace CameraRemote
             }
 
         }
-
-
         protected override void OnActivityResult(int requestCode, Result resultCode, Intent data)
         {
             base.OnActivityResult(requestCode, resultCode, data);
@@ -143,7 +138,6 @@ namespace CameraRemote
                 fs.Flush();
                 fs.Close();
             }
-
             catch (System.Exception e)
             {
                 tv.Text = e.ToString();
@@ -199,11 +193,12 @@ namespace CameraRemote
         }
         private void BtCamera_Click(object sender, EventArgs e)
         {
-            CameraClick();
+            Intent intent = new Intent("android.media.action.IMAGE_CAPTURE");
+            StartActivity(intent);
         }
         private void BtnTakePic_Click(object sender, EventArgs e)
         {
-            Intent intent = new Intent("android.media.action.IMAGE_CAPTURE");
+            Intent intent = new Intent(Android.Provider.MediaStore.ActionImageCapture);
             StartActivityForResult(intent, 0);
         }
         #endregion
@@ -244,19 +239,12 @@ namespace CameraRemote
             tvStatus = (TextView)FindViewById(Resource.Id.tvStatus);
             lvDevices = (ListView)FindViewById(Resource.Id.lvDeviecs);
             btnTakePic = (Button)FindViewById(Resource.Id.btnTakePic);
-            iv = FindViewById<ImageView>(Resource.Id.iv);
-            tv = FindViewById<TextView>(Resource.Id.tvPathFile);
+            iv = (ImageView)FindViewById(Resource.Id.iv);
+            tv = (TextView)FindViewById(Resource.Id.tvPathFile);
             btCamera.Click += BtCamera_Click;
             btGetCon.Click += BtGetCon_Click;
             btnTakePic.Click += BtnTakePic_Click;
             lvDevices.ItemClick += LvDevices_ItemClick;
-        }
-
-
-        private void CameraClick()
-        {
-            Intent intent = new Intent("android.media.action.IMAGE_CAPTURE");
-            StartActivity(intent);
         }
         private void SendData(string msg, NetworkStream stream)
         {
