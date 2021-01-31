@@ -2169,88 +2169,88 @@ namespace CameraRemote
 			public const int browser_actions_menu_view = 2131165221;
 			
 			// aapt resource value: 0x7F070026
-			public const int btnTakePic = 2131165222;
+			public const int btnGetCon = 2131165222;
 			
 			// aapt resource value: 0x7F070027
-			public const int buttonPanel = 2131165223;
+			public const int btnTakePic = 2131165223;
 			
 			// aapt resource value: 0x7F070028
-			public const int center = 2131165224;
+			public const int buttonPanel = 2131165224;
 			
 			// aapt resource value: 0x7F070029
-			public const int center_horizontal = 2131165225;
+			public const int center = 2131165225;
 			
 			// aapt resource value: 0x7F07002A
-			public const int center_vertical = 2131165226;
+			public const int center_horizontal = 2131165226;
 			
 			// aapt resource value: 0x7F07002B
-			public const int checkbox = 2131165227;
+			public const int center_vertical = 2131165227;
 			
 			// aapt resource value: 0x7F07002C
-			public const int chronometer = 2131165228;
+			public const int checkbox = 2131165228;
 			
 			// aapt resource value: 0x7F07002D
-			public const int clip_horizontal = 2131165229;
+			public const int chronometer = 2131165229;
 			
 			// aapt resource value: 0x7F07002E
-			public const int clip_vertical = 2131165230;
+			public const int clip_horizontal = 2131165230;
 			
 			// aapt resource value: 0x7F07002F
-			public const int collapseActionView = 2131165231;
+			public const int clip_vertical = 2131165231;
 			
 			// aapt resource value: 0x7F070030
-			public const int content = 2131165232;
+			public const int collapseActionView = 2131165232;
 			
 			// aapt resource value: 0x7F070031
-			public const int contentPanel = 2131165233;
+			public const int content = 2131165233;
+			
+			// aapt resource value: 0x7F070032
+			public const int contentPanel = 2131165234;
 			
 			// aapt resource value: 0x7F070001
 			public const int CTRL = 2131165185;
 			
-			// aapt resource value: 0x7F070032
-			public const int custom = 2131165234;
-			
 			// aapt resource value: 0x7F070033
-			public const int customPanel = 2131165235;
+			public const int custom = 2131165235;
 			
 			// aapt resource value: 0x7F070034
-			public const int decor_content_parent = 2131165236;
+			public const int customPanel = 2131165236;
 			
 			// aapt resource value: 0x7F070035
-			public const int default_activity_button = 2131165237;
+			public const int decor_content_parent = 2131165237;
 			
 			// aapt resource value: 0x7F070036
-			public const int disableHome = 2131165238;
+			public const int default_activity_button = 2131165238;
 			
 			// aapt resource value: 0x7F070037
-			public const int edit_query = 2131165239;
+			public const int disableHome = 2131165239;
 			
 			// aapt resource value: 0x7F070038
-			public const int end = 2131165240;
-			
-			// aapt resource value: 0x7F07003A
-			public const int expanded_menu = 2131165242;
+			public const int edit_query = 2131165240;
 			
 			// aapt resource value: 0x7F070039
-			public const int expand_activities_button = 2131165241;
+			public const int end = 2131165241;
 			
 			// aapt resource value: 0x7F07003B
-			public const int fill = 2131165243;
+			public const int expanded_menu = 2131165243;
+			
+			// aapt resource value: 0x7F07003A
+			public const int expand_activities_button = 2131165242;
 			
 			// aapt resource value: 0x7F07003C
-			public const int fill_horizontal = 2131165244;
+			public const int fill = 2131165244;
 			
 			// aapt resource value: 0x7F07003D
-			public const int fill_vertical = 2131165245;
+			public const int fill_horizontal = 2131165245;
 			
 			// aapt resource value: 0x7F07003E
-			public const int forever = 2131165246;
+			public const int fill_vertical = 2131165246;
+			
+			// aapt resource value: 0x7F07003F
+			public const int forever = 2131165247;
 			
 			// aapt resource value: 0x7F070002
 			public const int FUNCTION = 2131165186;
-			
-			// aapt resource value: 0x7F07003F
-			public const int getCon = 2131165247;
 			
 			// aapt resource value: 0x7F070040
 			public const int group_divider = 2131165248;

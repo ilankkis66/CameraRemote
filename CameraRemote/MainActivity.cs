@@ -22,7 +22,7 @@ namespace CameraRemote
     [Activity(Label = "@string/app_name", Theme = "@style/AppTheme", MainLauncher = true)]
     public class MainActivity : AppCompatActivity
     {
-        Button btCamera;Button btGetCon; Button btnTakePic;
+        Button btCamera; Button btGetCon;
         TextView tvStatus, tv;
         ListView lvDevices;
         ImageView iv;
@@ -35,6 +35,8 @@ namespace CameraRemote
         NetworkStream ServerStream; TcpClient ServerTCP;
         bool mExternalStorageAvailable = false;
         bool mExternalStorageWriteable = false;
+        int requestPermissions;
+        string cameraPermission = Android.Manifest.Permission.Camera;
         [Obsolete]
         protected override void OnCreate(Bundle savedInstanceState)
         {
@@ -53,31 +55,9 @@ namespace CameraRemote
             lvDevices.SetAdapter(arrayAdapter);
         }
 
-        [Obsolete]
-        #region activty main proj
-        /*protected override void OnActivityResult(int requestCode, [GeneratedEnum] Result resultCode, Intent data)
-        {
-            base.OnActivityResult(requestCode, resultCode, data);
-            string s = "";
-            try{s = ReceiveData(ServerStream);}
-            catch { }
-            if (s.StartsWith("ADDD"))
-            {
-                AllDevices.Add(s.Substring(7));
-                ArrayAdapter<string> arrayAdapter = new ArrayAdapter<string>
-                            (ApplicationContext, Android.Resource.Layout.SimpleListItem1, AllDevices);
-                lvDevices.SetAdapter(arrayAdapter);
-            }
-            else if (s.StartsWith("DADR"))
-            {
-
-            }
-
-        }*/
-        #endregion
-
         public void setPermissitios()
         {
+            ActivityCompat.RequestPermissions(this, new string[] { cameraPermission, }, requestPermissions);
             string state = Android.OS.Environment.ExternalStorageState;
             if (Android.OS.Environment.MediaMounted.Equals(state))
             {
@@ -101,17 +81,19 @@ namespace CameraRemote
             }
 
         }
+
+        [Obsolete]
         protected override void OnActivityResult(int requestCode, Result resultCode, Intent data)
         {
             base.OnActivityResult(requestCode, resultCode, data);
             if (requestCode == 0)//coming from camera
             {
                 if (resultCode == Result.Ok)
-                {
-                    Android.Graphics.Bitmap bitmap = (Android.Graphics.Bitmap)data.Extras.Get("data");
-                    iv.SetImageBitmap(bitmap);
-                    saveImageToExternalStorage_version1(bitmap);
-                }
+                    {
+                        Android.Graphics.Bitmap bitmap = (Android.Graphics.Bitmap)data.Extras.Get("data");
+                        iv.SetImageBitmap(bitmap);
+                        saveImageToExternalStorage_version1(bitmap);
+                    }
             }
         }
         private void saveImageToExternalStorage_version1(Android.Graphics.Bitmap finalBitmap)
@@ -152,11 +134,9 @@ namespace CameraRemote
         {
             SendData("COND" + SEPERATOR + AllDevices[(int)e.Id], ServerStream);
             string s = "";
-            while(s=="")
-                s = ReceiveData(ServerStream);
-            if (s.Substring(0, 4) == "DADR")
-            {
-                IpRole = GetDeviceIpRole(s).Split(SEPERATOR);
+            while (s == "") s = ReceiveData(ServerStream);
+            IpRole = GetDeviceIpRole(s).Split(SEPERATOR);
+            if (s.StartsWith("DADR"))
                 if (IpRole[1] == "server")
                 {
                     TcpListener tcp_device = new TcpListener(6666);
@@ -166,31 +146,27 @@ namespace CameraRemote
                     SendData("ilan", stream_device);
                     tvStatus.Text = "i am the server, sent -----> ilan";
                 }
-            }
         }
         private void BtGetCon_Click(object sender, EventArgs e)
         {
             string s = "";
-            while(s=="")
-                s = ReceiveData(ServerStream);
-            if (s.Substring(0, 4) == "DADR")
-            {
-                IpRole = GetDeviceIpRole(s).Split(SEPERATOR);
+            while(s == "")  s = ReceiveData(ServerStream); 
+            IpRole = GetDeviceIpRole(s).Split(SEPERATOR);
+            if (s.StartsWith("DADR"))
                 if (IpRole[1] == "client")
                 {
                     TcpClient tcp_device = new TcpClient(device_ip, 6666);
                     NetworkStream stream_device = tcp_device.GetStream();
                     string t = "";
-                    while(t=="")
+                    while (t == "")
                         t = ReceiveData(ServerStream);
                     tvStatus.Text = "received------>" + t;
                 }
-            }
         }
         private void BtnTakePic_Click(object sender, EventArgs e)
         {
-            Intent intent = new Intent(Android.Provider.MediaStore.ActionImageCapture);
-            StartActivityForResult(intent, 0);
+            Intent intent = new Intent("android.media.action.IMAGE_CAPTURE");
+            StartActivityForResult(intent,0);
         }
         #endregion
 
@@ -225,16 +201,18 @@ namespace CameraRemote
         [Obsolete]
         private void InitWidgets()
         {
-            btGetCon = (Button)FindViewById(Resource.Id.getCon);
             tvStatus = (TextView)FindViewById(Resource.Id.tvStatus);
             lvDevices = (ListView)FindViewById(Resource.Id.lvDeviecs);
-            btnTakePic = (Button)FindViewById(Resource.Id.btnTakePic);
+            btCamera = (Button)FindViewById(Resource.Id.btnTakePic);
+            btGetCon = (Button)FindViewById(Resource.Id.btnGetCon);
             iv = (ImageView)FindViewById(Resource.Id.iv);
             tv = (TextView)FindViewById(Resource.Id.tvPathFile);
+            btCamera.Click += BtnTakePic_Click;
             btGetCon.Click += BtGetCon_Click;
-            btnTakePic.Click += BtnTakePic_Click;
             lvDevices.ItemClick += LvDevices_ItemClick;
         }
+
+
         private void SendData(string msg, NetworkStream stream)
         {
             byte[] data = new byte[CHUNK];

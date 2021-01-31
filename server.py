@@ -22,6 +22,7 @@ def send(client_socket, send_data):
     :type send_data: string
     """
     client_socket.send(send_data.encode())
+    print("send to",client_socket,"|||",send_data)
 
 
 def send_except_one(data, key):
@@ -67,6 +68,7 @@ def main():
                 if key != data:
                     send(cs, key + "###")
                     print("send to", data, key + "###")
+            # send_except_one("ADDD"+SEPARATOR+data, data)
             send(cs, "ENDD")
         except socket.error:
             pass

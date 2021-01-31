@@ -10,7 +10,7 @@ def main():
     t = ""
     my_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     my_socket.connect((IP, PORT))
-    my_socket.send("python client".encode())
+    my_socket.send("python client1".encode())
     while not t.endswith("ENDD"):
         t += my_socket.recv(CHUNK).decode()
         print(t)
