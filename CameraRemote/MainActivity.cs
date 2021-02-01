@@ -33,10 +33,7 @@ namespace CameraRemote
         List<string> AllDevices;
         string[] IpRole;
         NetworkStream ServerStream; TcpClient ServerTCP;
-        bool mExternalStorageAvailable = false;
-        bool mExternalStorageWriteable = false;
-        int requestPermissions;
-        string cameraPermission = Android.Manifest.Permission.Camera;
+        //bool mExternalStorageAvailable = false; bool mExternalStorageWriteable = false;
         [Obsolete]
         protected override void OnCreate(Bundle savedInstanceState)
         {
@@ -57,26 +54,25 @@ namespace CameraRemote
 
         public void setPermissitios()
         {
-            ActivityCompat.RequestPermissions(this, new string[] { cameraPermission, }, requestPermissions);
+            ActivityCompat.RequestPermissions(this, new string[] { Manifest.Permission.WriteExternalStorage, Manifest.Permission.ReadExternalStorage, Manifest.Permission.Camera, }, 1);
             string state = Android.OS.Environment.ExternalStorageState;
             if (Android.OS.Environment.MediaMounted.Equals(state))
             {
                 //We can read and write the media
-                mExternalStorageAvailable = mExternalStorageWriteable = true;
+                //mExternalStorageAvailable = mExternalStorageWriteable = true;
                 Toast.MakeText(this, "We can read and write the media", ToastLength.Long).Show();
             }
 
             else if (Android.OS.Environment.MediaMountedReadOnly.Equals(state))
             {
                 //We can only read the media
-                mExternalStorageAvailable = true;
-                mExternalStorageWriteable = false;
+                //mExternalStorageAvailable = true; mExternalStorageWriteable = false;
                 Toast.MakeText(this, "We can only read the media", ToastLength.Long).Show();
             }
             else
             {
                 //Something else is wrong. we can neither read nor write
-                mExternalStorageAvailable = mExternalStorageWriteable = false;
+                //mExternalStorageAvailable = mExternalStorageWriteable = false;
                 Toast.MakeText(this, "Something else is wrong. we can neither read nor write", ToastLength.Long).Show();
             }
 
