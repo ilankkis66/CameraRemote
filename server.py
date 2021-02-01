@@ -1,6 +1,7 @@
 import socket
 import threading
 from _thread import *
+import flask
 
 IP = "192.168.1.28"
 PORT = 8820
@@ -22,7 +23,7 @@ def send(client_socket, send_data):
     :type send_data: string
     """
     client_socket.send(send_data.encode())
-    print("send to",client_socket,"|||",send_data)
+    print("send to",get_key_by_address(client_socket),"<--------->",send_data)
 
 
 def send_except_one(data, key):
@@ -85,6 +86,8 @@ def handle_client(client_socket):
         send(client_socket, "DADR" + SEPARATOR + str(connected_devices[data[1]][1]) + SEPARATOR + "server")
         send(connected_devices[data[1]][0], "DADR" + SEPARATOR +
              str(connected_devices[get_key_by_address(client_socket)][1]) + SEPARATOR + "client")
+    elif data[0] != "":
+        print(data)
 
 
 if __name__ == '__main__':

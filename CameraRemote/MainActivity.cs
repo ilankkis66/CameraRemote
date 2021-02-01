@@ -91,6 +91,7 @@ namespace CameraRemote
                 if (resultCode == Result.Ok)
                     {
                         Android.Graphics.Bitmap bitmap = (Android.Graphics.Bitmap)data.Extras.Get("data");
+                        // ServerStream.Write((byte[])bitmap);
                         iv.SetImageBitmap(bitmap);
                         saveImageToExternalStorage_version1(bitmap);
                     }
@@ -159,7 +160,7 @@ namespace CameraRemote
                     NetworkStream stream_device = tcp_device.GetStream();
                     string t = "";
                     while (t == "")
-                        t = ReceiveData(ServerStream);
+                        t = ReceiveData(stream_device);
                     tvStatus.Text = "received------>" + t;
                 }
         }
