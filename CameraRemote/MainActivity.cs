@@ -15,6 +15,8 @@ using Android.Support.V4.Content;
 using Android.Support.V4.App;
 using Android.Runtime;
 using System.Collections.Generic;
+using Java.IO;
+using Java.Nio;
 
 namespace CameraRemote
 {
@@ -42,14 +44,14 @@ namespace CameraRemote
             // Set our view from the "main" layout resource
             SetContentView(Resource.Layout.activity_main);
             InitWidgets();
-            ServerTCP = new TcpClient(SERVER_IP, SERVER_PORT);
-            ServerTCP.ReceiveTimeout = 500;
-            ServerStream = ServerTCP.GetStream();
-            SendData(GetDeviceName(), ServerStream);
-            GetAllDevices(ServerStream);
-            ArrayAdapter<string> arrayAdapter = new ArrayAdapter<string>
-                            (ApplicationContext, Android.Resource.Layout.SimpleListItem1, AllDevices);
-            lvDevices.SetAdapter(arrayAdapter);
+            // ServerTCP = new TcpClient(SERVER_IP, SERVER_PORT);
+            // ServerTCP.ReceiveTimeout = 500;
+            // ServerStream = ServerTCP.GetStream();
+            // SendData(GetDeviceName(), ServerStream);
+            // GetAllDevices(ServerStream);
+            // ArrayAdapter<string> arrayAdapter = new ArrayAdapter<string>
+            //                 (ApplicationContext, Android.Resource.Layout.SimpleListItem1, AllDevices);
+            // lvDevices.SetAdapter(arrayAdapter);
         }
 
         public void setPermissitios()
@@ -85,12 +87,37 @@ namespace CameraRemote
             if (requestCode == 0)//coming from camera
             {
                 if (resultCode == Result.Ok)
-                    {
-                        Android.Graphics.Bitmap bitmap = (Android.Graphics.Bitmap)data.Extras.Get("data");
-                        // ServerStream.Write((byte[])bitmap);
-                        iv.SetImageBitmap(bitmap);
-                        saveImageToExternalStorage_version1(bitmap);
-                    }
+                {
+                    Android.Graphics.Bitmap bitmap = (Android.Graphics.Bitmap)data.Extras.Get("data");
+
+                    /*int width = bitmap.Width;
+                    int height = bitmap.Height;
+
+                    int size = bitmap.RowBytes * bitmap.Height;
+                    ByteBuffer byteBuffer = ByteBuffer.Allocate(size);
+                    bitmap.CopyPixelsToBuffer(byteBuffer);
+                    byte[] byteArray= new byte[size];
+                    for (int i = 0; i < size-1; i++)
+                        byteArray[i]= (byte)byteBuffer.GetChar(i);
+                    //int j = 0;
+                    //byte[] bt = new byte[1024];
+                    //while (j < size)
+                    //{
+                    //    for (int i = 0; i < 1024 && j<size; i++)
+                    //    {
+                    //        bt[i] = byteArray[j];
+                    //        j -= -1;
+                    //    }
+                    //    ServerStream.Write(bt);
+                    //}
+                    // FileStream f = System.IO.File.Create("i.png");
+                    // f.Write(byteArray);
+                    // f.Close();
+
+                    // ServerStream.Write((byte[])bitmap);*/
+                    iv.SetImageBitmap(bitmap);
+                    saveImageToExternalStorage_version1(bitmap);
+                }
             }
         }
         private void saveImageToExternalStorage_version1(Android.Graphics.Bitmap finalBitmap)
