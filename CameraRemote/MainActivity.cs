@@ -17,6 +17,7 @@ using Android.Runtime;
 using System.Collections.Generic;
 using Java.IO;
 using Java.Nio;
+using System.Net.NetworkInformation;
 
 namespace CameraRemote
 {
@@ -24,7 +25,7 @@ namespace CameraRemote
     [Activity(Label = "@string/app_name", Theme = "@style/AppTheme", MainLauncher = true)]
     public class MainActivity : AppCompatActivity
     {
-        Button btCamera; Button btGetCon;
+        Button btCamera, btGetCon;
         TextView tvStatus, tv;
         ListView lvDevices;
         ImageView iv;
@@ -44,14 +45,13 @@ namespace CameraRemote
             // Set our view from the "main" layout resource
             SetContentView(Resource.Layout.activity_main);
             InitWidgets();
-            // ServerTCP = new TcpClient(SERVER_IP, SERVER_PORT);
-            // ServerTCP.ReceiveTimeout = 500;
-            // ServerStream = ServerTCP.GetStream();
-            // SendData(GetDeviceName(), ServerStream);
-            // GetAllDevices(ServerStream);
-            // ArrayAdapter<string> arrayAdapter = new ArrayAdapter<string>
-            //                 (ApplicationContext, Android.Resource.Layout.SimpleListItem1, AllDevices);
-            // lvDevices.SetAdapter(arrayAdapter);
+            ServerTCP = new TcpClient(SERVER_IP, SERVER_PORT);
+            ServerStream = ServerTCP.GetStream();
+            SendData(GetDeviceName()+GetDeviceMacAddress(), ServerStream);
+            GetAllDevices(ServerStream);
+            ArrayAdapter<string> arrayAdapter = new ArrayAdapter<string>
+                            (ApplicationContext, Android.Resource.Layout.SimpleListItem1, AllDevices);
+            lvDevices.SetAdapter(arrayAdapter);
         }
 
         public void setPermissitios()
@@ -220,9 +220,23 @@ namespace CameraRemote
                 device_ip += data[1][i];
             return data[0] + SEPERATOR + data[2];
         }
+        public static string GetDeviceMacAddress()
+        {
+            foreach (var netInterface in NetworkInterface.GetAllNetworkInterfaces())
+            {
+                if (netInterface.NetworkInterfaceType == NetworkInterfaceType.Wireless80211 ||
+                    netInterface.NetworkInterfaceType == NetworkInterfaceType.Ethernet)
+                {
+                    var address = netInterface.GetPhysicalAddress();
+                    return BitConverter.ToString(address.GetAddressBytes());
+
+                }
+            }
+            return "ilan";
+        }
         #endregion
 
-        [Obsolete]
+                [Obsolete]
         private void InitWidgets()
         {
             tvStatus = (TextView)FindViewById(Resource.Id.tvStatus);
@@ -235,7 +249,6 @@ namespace CameraRemote
             btGetCon.Click += BtGetCon_Click;
             lvDevices.ItemClick += LvDevices_ItemClick;
         }
-
 
         private void SendData(string msg, NetworkStream stream)
         {
