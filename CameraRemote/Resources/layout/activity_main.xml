@@ -3,13 +3,14 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@drawable/bg">
     <Button
         android:id="@+id/btnTakePic"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_x="150dp"
-        android:layout_y="300dp"
+        android:layout_y="20dp"
         android:text="camera"
         tools:ignore="HardcodedText" />
     <Button
@@ -17,7 +18,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_x="125dp"
-        android:layout_y="200dp"
+        android:layout_y="300dp"
         android:text="Get Connection"
         tools:ignore="HardcodedText" />
     <TextView
@@ -27,7 +28,7 @@
         android:layout_height="wrap_content"
         android:layout_x="0dp"
         android:layout_y="0dp"
-        tools:ignore="HardcodedText" />
+        android:textColor="#000" />
     <ListView
         android:id="@+id/lvDeviecs"
         android:layout_width="match_parent"
@@ -49,5 +50,5 @@
         android:text="path"
         android:layout_x="0dp"
         android:layout_y="350dp"
-        android:textColor="#000" />
+        android:textColor="#000"/>
 </AbsoluteLayout>

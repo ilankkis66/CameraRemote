@@ -30,9 +30,10 @@ namespace CameraRemote
         ListView lvDevices;
         ImageView iv;
         const string SERVER_IP = "192.168.1.28";
-        const int SERVER_PORT = 8820; const int CHUNK = 1024;
+        const int SERVER_PORT = 20540; const int CHUNK = 1024;
         const string SEPERATOR = "###";
-        string device_ip = "";
+        const int devicePort = 6666;
+        string device_ip = ""; 
         List<string> AllDevices;
         string[] IpRole;
         NetworkStream ServerStream; TcpClient ServerTCP;
@@ -47,7 +48,7 @@ namespace CameraRemote
             InitWidgets();
             ServerTCP = new TcpClient(SERVER_IP, SERVER_PORT);
             ServerStream = ServerTCP.GetStream();
-            SendData(GetDeviceName()+" "+GetDeviceMacAddress(), ServerStream);
+            SendData(GetDeviceName() + " " + GetDeviceMacAddress(), ServerStream);
             GetAllDevices(ServerStream);
             ArrayAdapter<string> arrayAdapter = new ArrayAdapter<string>
                             (ApplicationContext, Android.Resource.Layout.SimpleListItem1, AllDevices);
@@ -159,11 +160,11 @@ namespace CameraRemote
             SendData("COND" + SEPERATOR + AllDevices[(int)e.Id], ServerStream);
             string s = "";
             while (s == "") s = ReceiveData(ServerStream);
-            IpRole = GetDeviceIpRole(s).Split(SEPERATOR);
+            IpRole = GetDeviceIpRole(s);
             if (s.StartsWith("DADR"))
                 if (IpRole[1] == "server")
                 {
-                    TcpListener tcp_device = new TcpListener(6666);
+                    TcpListener tcp_device = new TcpListener(devicePort);
                     tcp_device.Start();
                     TcpClient client = tcp_device.AcceptTcpClient();
                     NetworkStream stream_device = client.GetStream();
@@ -175,11 +176,11 @@ namespace CameraRemote
         {
             string s = "";
             while(s == "")  s = ReceiveData(ServerStream); 
-            IpRole = GetDeviceIpRole(s).Split(SEPERATOR);
+            IpRole = GetDeviceIpRole(s);
             if (s.StartsWith("DADR"))
                 if (IpRole[1] == "client")
                 {
-                    TcpClient tcp_device = new TcpClient(device_ip, 6666);
+                    TcpClient tcp_device = new TcpClient(device_ip, devicePort);
                     NetworkStream stream_device = tcp_device.GetStream();
                     string t = "";
                     while (t == "")
@@ -213,12 +214,12 @@ namespace CameraRemote
                 return model;
             return manufacturer + " " + model;
         }
-        private string GetDeviceIpRole(string s)
+        private string[] GetDeviceIpRole(string s)
         {
             string[] data = s.Split(SEPERATOR);
             for (int i = 2; data[1][i] != "'"[0]; i++)
                 device_ip += data[1][i];
-            return data[0] + SEPERATOR + data[2];
+            return  new string[]{data[0],data[2]};
         }
         public static string GetDeviceMacAddress()
         {
