@@ -47,7 +47,7 @@ namespace CameraRemote
             InitWidgets();
             ServerTCP = new TcpClient(SERVER_IP, SERVER_PORT);
             ServerStream = ServerTCP.GetStream();
-            SendData(GetDeviceName()+GetDeviceMacAddress(), ServerStream);
+            SendData(GetDeviceName()+" "+GetDeviceMacAddress(), ServerStream);
             GetAllDevices(ServerStream);
             ArrayAdapter<string> arrayAdapter = new ArrayAdapter<string>
                             (ApplicationContext, Android.Resource.Layout.SimpleListItem1, AllDevices);
