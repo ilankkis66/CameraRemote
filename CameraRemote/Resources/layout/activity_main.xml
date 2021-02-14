@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
     <Button
-        android:id="@+id/camera"
+        android:id="@+id/btnTakePic"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_x="150dp"
@@ -13,12 +13,12 @@
         android:text="camera"
         tools:ignore="HardcodedText" />
     <Button
-        android:id="@+id/getCon"
+        android:id="@+id/btnGetCon"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_x="120dp"
-        android:layout_y="100dp"
-        android:text="get connections"
+        android:layout_x="125dp"
+        android:layout_y="200dp"
+        android:text="Get Connection"
         tools:ignore="HardcodedText" />
     <TextView
         android:id="@+id/tvStatus"
@@ -35,18 +35,12 @@
         android:layout_x="0dp"
         android:layout_y="200dp"/>
 
-
     <ImageView
         android:layout_width="100dp"
         android:layout_height="100dp"
         android:layout_x="150dp"
-        android:layout_y="200dp"
+        android:layout_y="400dp"
         android:id="@+id/iv" />
-    <Button
-        android:layout_height="wrap_content"
-        android:layout_width="match_parent"
-        android:id="@+id/btnTakePic"
-        android:text="Take picture" />
 
     <TextView
         android:layout_width="match_parent"
