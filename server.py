@@ -1,8 +1,7 @@
 import socket
 import threading
-from _thread import *
 
-IP = "192.168.1.18"
+IP = "192.168.1.28"
 PORT = 8820
 CHUNK = 1024
 SEPARATOR = "###"
@@ -73,7 +72,8 @@ def main():
             pass
         try:
             for key in get_keys_list(connected_devices):
-                start_new_thread(handle_client, (connected_devices[key][0],))
+                t = threading.Thread(target=handle_client, args=(connected_devices[key][0],))
+                t.start()
         except KeyError:
             pass
 
