@@ -25,11 +25,11 @@ namespace CameraRemote
     [Activity(Label = "@string/app_name", Theme = "@style/AppTheme", MainLauncher = true)]
     public class MainActivity : AppCompatActivity
     {
-        Button btCamera, btGetCon;
+        Button btCamera, btGetCon, btSearch;
         TextView tvStatus, tv;
         ListView lvDevices;
         ImageView iv;
-        const string SERVER_IP = "192.168.1.28";
+        const string SERVER_IP = "192.168.1.18";
         const int SERVER_PORT = 20540; const int CHUNK = 1024;
         const string SEPERATOR = "###";
         const int devicePort = 6666;
@@ -46,14 +46,8 @@ namespace CameraRemote
             // Set our view from the "main" layout resource
             SetContentView(Resource.Layout.activity_main);
             InitWidgets();
-            ServerTCP = new TcpClient(SERVER_IP, SERVER_PORT);
-            ServerStream = ServerTCP.GetStream();
-            SendData(GetDeviceName() + " " + GetDeviceMacAddress(), ServerStream);
-            GetAllDevices(ServerStream);
-            ArrayAdapter<string> arrayAdapter = new ArrayAdapter<string>
-                            (ApplicationContext, Android.Resource.Layout.SimpleListItem1, AllDevices);
-            lvDevices.SetAdapter(arrayAdapter);
         }
+
 
         public void setPermissitios()
         {
@@ -193,6 +187,18 @@ namespace CameraRemote
             Intent intent = new Intent("android.media.action.IMAGE_CAPTURE");
             StartActivityForResult(intent,0);
         }
+
+        [Obsolete]
+        private void BtSearch_Click(object sender, EventArgs e)
+        {
+            ServerTCP = new TcpClient(SERVER_IP, SERVER_PORT);
+            ServerStream = ServerTCP.GetStream();
+            SendData(GetDeviceName() + " " + GetDeviceMacAddress(), ServerStream);
+            GetAllDevices(ServerStream);
+            ArrayAdapter<string> arrayAdapter = new ArrayAdapter<string>
+                            (ApplicationContext, Android.Resource.Layout.SimpleListItem1, AllDevices);
+            lvDevices.SetAdapter(arrayAdapter);
+        }
         #endregion
 
         #region GetMethod
@@ -244,12 +250,15 @@ namespace CameraRemote
             lvDevices = (ListView)FindViewById(Resource.Id.lvDeviecs);
             btCamera = (Button)FindViewById(Resource.Id.btnTakePic);
             btGetCon = (Button)FindViewById(Resource.Id.btnGetCon);
+            btSearch = (Button)FindViewById(Resource.Id.btnSearch);
             iv = (ImageView)FindViewById(Resource.Id.iv);
             tv = (TextView)FindViewById(Resource.Id.tvPathFile);
             btCamera.Click += BtnTakePic_Click;
             btGetCon.Click += BtGetCon_Click;
+            btSearch.Click += BtSearch_Click;
             lvDevices.ItemClick += LvDevices_ItemClick;
         }
+
 
         private void SendData(string msg, NetworkStream stream)
         {
