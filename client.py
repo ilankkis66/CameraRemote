@@ -1,7 +1,7 @@
 import socket
 
 IP = "192.168.1.28"
-PORT = 8820
+PORT = 8888
 CHUNK = 1024
 SEPARATOR = "###"
 
@@ -36,3 +36,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+

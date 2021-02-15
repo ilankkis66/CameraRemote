@@ -1,7 +1,7 @@
 import socket
 import threading
 
-IP = "192.168.1.28"
+IP = "0.0.0.0"
 PORT = 8820
 CHUNK = 1024
 SEPARATOR = "###"
@@ -48,7 +48,7 @@ def get_key_by_address(client_address):
 
 
 def main():
-    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server_socket = socket.socket()
     server_socket.bind((IP, PORT))
     server_socket.listen(2)
     cs, a = server_socket.accept()
@@ -56,21 +56,20 @@ def main():
     connected_devices[data] = [cs, a]
     send(cs, "ENDD")
     print("main", a, data)
-    # server_socket.settimeout(0.0001)
+    server_socket.settimeout(0.0001)
     while True:
-        # try:
-        #     cs, a = server_socket.accept()
-        #     data = receive(cs)
-        #     connected_devices[data] = [cs, a]
-        #     print("while", a, data)
-        #     for key in get_keys_list(connected_devices):
-        #         if key != data:
-        #             send(cs, key + "###")
-        #             print("send to", data, key + "###")
-        #     # send_except_one("ADDD"+SEPARATOR+data, data)
-        #     send(cs, "ENDD")
-        # except socket.error:
-        #     pass
+        try:
+            cs, a = server_socket.accept()
+            data = receive(cs)
+            connected_devices[data] = [cs, a]
+            print("while", a, data)
+            for key in get_keys_list(connected_devices):
+                if key != data:
+                    send(cs, key + "###")
+            # send_except_one("ADDD"+SEPARATOR+data, data)
+            send(cs, "ENDD")
+        except socket.error:
+            pass
         try:
             for key in get_keys_list(connected_devices):
                 t = threading.Thread(target=handle_client, args=(connected_devices[key][0],))
@@ -80,14 +79,13 @@ def main():
 
 
 def handle_client(client_socket):
-    # data = receive(client_socket).split(SEPARATOR)
-    # if data[0] == "COND" and data[1] in get_keys_list(connected_devices):
-    #     send(client_socket, "DADR" + SEPARATOR + str(connected_devices[data[1]][1]) + SEPARATOR + "server")
-    #     send(connected_devices[data[1]][0], "DADR" + SEPARATOR +
-    #          str(connected_devices[get_key_by_address(client_socket)][1]) + SEPARATOR + "client")
-    # elif data[0] != "":
-    #     print(data)
-    pass
+    data = receive(client_socket).split(SEPARATOR)
+    if data[0] == "COND" and data[1] in get_keys_list(connected_devices):
+        send(client_socket, "DADR" + SEPARATOR + str(connected_devices[data[1]][1]) + SEPARATOR + "server")
+        send(connected_devices[data[1]][0], "DADR" + SEPARATOR +
+             str(connected_devices[get_key_by_address(client_socket)][1]) + SEPARATOR + "client")
+    elif data[0] != "":
+        print(data)
 
 
 if __name__ == '__main__':
