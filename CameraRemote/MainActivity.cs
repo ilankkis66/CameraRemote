@@ -29,8 +29,8 @@ namespace CameraRemote
         TextView tvStatus, tv;
         ListView lvDevices;
         ImageView iv;
-        const string SERVER_IP = "192.168.1.18";
-        const int SERVER_PORT = 20540; const int CHUNK = 1024;
+        const string SERVER_IP = "192.168.1.28";
+        const int SERVER_PORT = 8820; const int CHUNK = 1024;
         const string SEPERATOR = "###";
         const int devicePort = 6666;
         string device_ip = ""; 
