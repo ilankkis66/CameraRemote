@@ -103,7 +103,9 @@
     <AndroidResource Include="Resources\mipmap-xxxhdpi\ic_launcher_foreground.png" />
     <AndroidResource Include="Resources\mipmap-xxxhdpi\ic_launcher_round.png" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <AndroidResource Include="Resources\drawable\bgDonyoh.jpg" />
+  </ItemGroup>
   <ItemGroup>
     <PackageReference Include="LaunchDarkly.EventSource">
       <Version>3.4.0</Version>
