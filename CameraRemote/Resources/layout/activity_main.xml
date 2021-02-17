@@ -4,15 +4,15 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/bgdonyoh">
-    <Button
+    android:background="#008800">
+    <Button 
         android:id="@+id/btnTakePic"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_x="150dp"
         android:layout_y="20dp"
         android:text="camera"
-        tools:ignore="HardcodedText" />
+        tools:ignore="HardcodedText"/> ;camera
     <Button
         android:id="@+id/btnSearch"
         android:layout_width="wrap_content"
@@ -20,7 +20,7 @@
         android:layout_x="280dp"
         android:layout_y="120dp"
         android:text="search"
-        tools:ignore="HardcodedText" />
+        tools:ignore="HardcodedText" /> ;search
     <Button
         android:id="@+id/btnGetCon"
         android:layout_width="wrap_content"
@@ -28,7 +28,15 @@
         android:layout_x="125dp"
         android:layout_y="300dp"
         android:text="Get Connection"
-        tools:ignore="HardcodedText" />
+        tools:ignore="HardcodedText" /> ;GetCon
+    <Button
+        android:id="@+id/btnGetPic"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_x="0dp"
+        android:layout_y="450dp"
+        android:text="Get Picture"
+        tools:ignore="HardcodedText" /> ;GetPic
     <TextView
         android:id="@+id/tvStatus"
         android:text="status"
@@ -36,21 +44,7 @@
         android:layout_height="wrap_content"
         android:layout_x="0dp"
         android:layout_y="0dp"
-        android:textColor="#FFF" />
-    <ListView
-        android:id="@+id/lvDeviecs"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_x="0dp"
-        android:layout_y="200dp"/>
-
-    <ImageView
-        android:layout_width="100dp"
-        android:layout_height="100dp"
-        android:layout_x="150dp"
-        android:layout_y="400dp"
-        android:id="@+id/iv" />
-
+        android:textColor="#FFF" /> ;tvStatus
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -58,5 +52,27 @@
         android:text="path"
         android:layout_x="0dp"
         android:layout_y="350dp"
-        android:textColor="#FFF"/>
+        android:textColor="#FFF"/> ;tv
+    <ListView
+        android:id="@+id/lvDeviecs"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_x="0dp"
+        android:layout_y="200dp"/> ;lvDevices
+    <ImageView
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_x="150dp"
+        android:layout_y="400dp"
+        android:id="@+id/iv"
+        android:contentDescription="description"
+        tools:ignore="HardcodedText" /> ;iv
+    <ImageView
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_x="150dp"
+        android:layout_y="100dp"
+        android:id="@+id/ivCheck"
+        android:contentDescription="description"
+        tools:ignore="HardcodedText" /> ;ivCheck
 </AbsoluteLayout>

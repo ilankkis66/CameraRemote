@@ -18,6 +18,7 @@ using System.Collections.Generic;
 using Java.IO;
 using Java.Nio;
 using System.Net.NetworkInformation;
+using static Android.Graphics.Bitmap;
 
 namespace CameraRemote
 {
@@ -25,10 +26,10 @@ namespace CameraRemote
     [Activity(Label = "@string/app_name", Theme = "@style/AppTheme", MainLauncher = true)]
     public class MainActivity : AppCompatActivity
     {
-        Button btCamera, btGetCon, btSearch;
+        Button btCamera, btGetCon, btSearch, btGetPic;
         TextView tvStatus, tv;
         ListView lvDevices;
-        ImageView iv;
+        ImageView iv, ivCheck;
         const string SERVER_IP = "192.168.1.28";
         const int SERVER_PORT = 8820; const int CHUNK = 1024;
         const string SEPERATOR = "###";
@@ -36,7 +37,8 @@ namespace CameraRemote
         string device_ip = ""; 
         List<string> AllDevices;
         string[] IpRole;
-        NetworkStream ServerStream; TcpClient ServerTCP;
+        TcpClient ServerTCP; NetworkStream ServerStream;
+        TcpClient DeviceTcp; NetworkStream DeviceStream;
         //bool mExternalStorageAvailable = false; bool mExternalStorageWriteable = false;
         [Obsolete]
         protected override void OnCreate(Bundle savedInstanceState)
@@ -84,34 +86,20 @@ namespace CameraRemote
                 if (resultCode == Result.Ok)
                 {
                     Android.Graphics.Bitmap bitmap = (Android.Graphics.Bitmap)data.Extras.Get("data");
-
-                    /*int width = bitmap.Width;
-                    int height = bitmap.Height;
-
-                    int size = bitmap.RowBytes * bitmap.Height;
-                    ByteBuffer byteBuffer = ByteBuffer.Allocate(size);
-                    bitmap.CopyPixelsToBuffer(byteBuffer);
-                    byte[] byteArray= new byte[size];
-                    for (int i = 0; i < size-1; i++)
-                        byteArray[i]= (byte)byteBuffer.GetChar(i);
-                    //int j = 0;
-                    //byte[] bt = new byte[1024];
-                    //while (j < size)
-                    //{
-                    //    for (int i = 0; i < 1024 && j<size; i++)
-                    //    {
-                    //        bt[i] = byteArray[j];
-                    //        j -= -1;
-                    //    }
-                    //    ServerStream.Write(bt);
-                    //}
-                    // FileStream f = System.IO.File.Create("i.png");
-                    // f.Write(byteArray);
-                    // f.Close();
-
-                    // ServerStream.Write((byte[])bitmap);*/
                     iv.SetImageBitmap(bitmap);
                     saveImageToExternalStorage_version1(bitmap);
+                    if (DeviceStream != null)
+                    {
+                        #region GetBytes
+                        int size = bitmap.RowBytes * bitmap.Height;
+                        ByteBuffer byteBuffer = ByteBuffer.Allocate(size);
+                        bitmap.CopyPixelsToBuffer(byteBuffer);
+                        byte[] byteArray = new byte[size];
+                        for (int i = 0; i < size - 1; i++)
+                            byteArray[i] = (byte)byteBuffer.Get(byteArray[i]);
+                        #endregion
+                        DeviceStream.Write(byteArray);
+                    }
                 }
             }
         }
@@ -160,9 +148,9 @@ namespace CameraRemote
                 {
                     TcpListener tcp_device = new TcpListener(devicePort);
                     tcp_device.Start();
-                    TcpClient client = tcp_device.AcceptTcpClient();
-                    NetworkStream stream_device = client.GetStream();
-                    SendData("ilan", stream_device);
+                    DeviceTcp = tcp_device.AcceptTcpClient();
+                    DeviceStream = DeviceTcp.GetStream();
+                    SendData("ilan", DeviceStream);
                     tvStatus.Text = "i am the server, sent -----> ilan";
                 }
         }
@@ -174,11 +162,11 @@ namespace CameraRemote
             if (s.StartsWith("DADR"))
                 if (IpRole[1] == "client")
                 {
-                    TcpClient tcp_device = new TcpClient(device_ip, devicePort);
-                    NetworkStream stream_device = tcp_device.GetStream();
+                    DeviceTcp = new TcpClient(device_ip, devicePort);
+                    DeviceStream = DeviceTcp.GetStream();
                     string t = "";
                     while (t == "")
-                        t = ReceiveData(stream_device);
+                        t = ReceiveData(DeviceStream);
                     tvStatus.Text = "received------>" + t;
                 }
         }
@@ -187,7 +175,6 @@ namespace CameraRemote
             Intent intent = new Intent("android.media.action.IMAGE_CAPTURE");
             StartActivityForResult(intent,0);
         }
-
         [Obsolete]
         private void BtSearch_Click(object sender, EventArgs e)
         {
@@ -198,6 +185,15 @@ namespace CameraRemote
             ArrayAdapter<string> arrayAdapter = new ArrayAdapter<string>
                             (ApplicationContext, Android.Resource.Layout.SimpleListItem1, AllDevices);
             lvDevices.SetAdapter(arrayAdapter);
+        }
+        private void BtGetPic_Click(object sender, EventArgs e)
+        {
+            byte[] arr = new byte[110592];
+            DeviceStream.Read(arr);
+
+            Android.Graphics.Bitmap bmp = BitmapFactory.DecodeByteArray(arr, 0, arr.Length);
+            iv.SetImageBitmap(bmp);
+            saveImageToExternalStorage_version1(bmp);
         }
         #endregion
 
@@ -243,23 +239,27 @@ namespace CameraRemote
         }
         #endregion
 
-                [Obsolete]
+        [Obsolete]
         private void InitWidgets()
         {
-            tvStatus = (TextView)FindViewById(Resource.Id.tvStatus);
             lvDevices = (ListView)FindViewById(Resource.Id.lvDeviecs);
             btCamera = (Button)FindViewById(Resource.Id.btnTakePic);
             btGetCon = (Button)FindViewById(Resource.Id.btnGetCon);
             btSearch = (Button)FindViewById(Resource.Id.btnSearch);
-            iv = (ImageView)FindViewById(Resource.Id.iv);
+            btGetPic = (Button)FindViewById(Resource.Id.btnGetPic);
+            tvStatus = (TextView)FindViewById(Resource.Id.tvStatus);
             tv = (TextView)FindViewById(Resource.Id.tvPathFile);
+            iv = (ImageView)FindViewById(Resource.Id.iv);
+            ivCheck = (ImageView)FindViewById(Resource.Id.ivCheck);
+
             btCamera.Click += BtnTakePic_Click;
             btGetCon.Click += BtGetCon_Click;
             btSearch.Click += BtSearch_Click;
+            btGetPic.Click += BtGetPic_Click;
             lvDevices.ItemClick += LvDevices_ItemClick;
         }
 
-
+        #region sending
         private void SendData(string msg, NetworkStream stream)
         {
             byte[] data = new byte[CHUNK];
@@ -277,5 +277,6 @@ namespace CameraRemote
                 s += (char)data[i];
             return s;
         }
+        #endregion
     }
 }
