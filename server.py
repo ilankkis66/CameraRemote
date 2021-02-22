@@ -87,6 +87,22 @@ def handle_client(client_socket):
     elif data[0] != "":
         print(data)
 
+    """ 
+def handle_client(client_socket):
+    try:
+        data = client_socket.recv(2056)
+        if data[0] == "COND" and data[1] in get_keys_list(connected_devices):
+            send(client_socket, "DADR" + SEPARATOR + str(connected_devices[data[1]][1]) + SEPARATOR + "server")
+            send(connected_devices[data[1]][0], "DADR" + SEPARATOR +
+                 str(connected_devices[get_key_by_address(client_socket)][1]) + SEPARATOR + "client")
+        else:
+            print(data)
+            with open("d:\\ilan\\i.png","wb") as f:
+                f.write(data)
+    except:
+        pass
+     """
+
 
 if __name__ == '__main__':
     main()
