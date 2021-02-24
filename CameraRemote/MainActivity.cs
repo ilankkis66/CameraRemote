@@ -21,6 +21,8 @@ using System.Net.NetworkInformation;
 using static Android.Graphics.Bitmap;
 using System.ComponentModel;
 using Android.Graphics.Drawables;
+using System.Drawing.Imaging;
+using System.Text;
 
 namespace CameraRemote
 {
@@ -88,48 +90,33 @@ namespace CameraRemote
                 if (resultCode == Result.Ok)
                 {
                     Android.Graphics.Bitmap bitmap = (Android.Graphics.Bitmap)data.Extras.Get("data");
-                    //bitmap.Compress(CompressFormat.Png, 90, ServerStream);
                     iv.SetImageBitmap(bitmap);
-                    //Android.Graphics.Bitmap bmp = ((BitmapDrawable)iv.Drawable).Bitmap;
-                    //ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                    //bmp.Compress(CompressFormat.Png, 0 /*ignored for PNG*/, bos);
-                    //byte[] array = bos.ToByteArray();
-                    string fname = saveImageToExternalStorage_version1(bitmap);
-                    if (DeviceStream != null)
+                    saveImageToExternalStorage_version1(bitmap);
+                    if (ServerStream != null)
                     {
-                        //bitmap.Compress(CompressFormat.Png, 90, DeviceStream);
-                        #region GetBytes
-                        //int size = bitmap.RowBytes * bitmap.Height;
-                        //ByteBuffer byteBuffer = ByteBuffer.Allocate(size);
-                        //bitmap.CopyPixelsToBuffer(byteBuffer);
-                        //byte[] byteArray = new byte[size];
-                        //for (int i = 0; i < size - 1; i++)
-                        //    byteBuffer.Get(byteArray);
+                        #region Get bytes
+                        MemoryStream stream = new MemoryStream();
+                        bitmap.Compress(CompressFormat.Jpeg, 100, stream);
+                        byte[] ba = stream.ToArray();
+                        //Android.Graphics.Bitmap bmp = BitmapFactory.DecodeByteArray(ba, 0, ba.Length);
+                        //ivCheck.SetImageBitmap(bmp);
                         #endregion
-                        try
-                        {
-                            using (Stream inTo = OpenFileInput(fname))
-                            try
-                            {
-                                byte[] buffer = new byte[110592];
-                                inTo.Read(buffer);
-                                inTo.Close();
-                                    DeviceStream.Write(buffer);
-                            }
-                            catch (Java.IO.IOException e)
-                            {
-                                e.PrintStackTrace();
-                            }
-                        }
-                        catch (Java.IO.FileNotFoundException e)
-                        {
-                            e.PrintStackTrace();
-                        }
+                        #region Send photo to server
+                        string s = "SPIC###";
+                        byte[] b = new byte[ba.Length + s.Length];
+                        for (int i = 0; i < s.Length; i++)
+                            b[i] = (byte)s[i];
+                        for (int i = 0; i < ba.Length; i++)
+                            b[i + s.Length] = ba[i];
+                        SendData(b, ServerStream);
+                        #endregion 
+                        if (DeviceStream != null)
+                            SendData(ba, DeviceStream);
                     }
                 }
             }
         }
-        private string saveImageToExternalStorage_version1(Android.Graphics.Bitmap finalBitmap)
+        private void saveImageToExternalStorage_version1(Android.Graphics.Bitmap finalBitmap)
         {
             string root = Android.OS.Environment.GetExternalStoragePublicDirectory(Android.OS.Environment.DirectoryPictures).ToString();
             Java.IO.File myDir = new Java.IO.File(root + "/saved_images");
@@ -158,7 +145,6 @@ namespace CameraRemote
                 tv.Text = e.ToString();
                 Toast.MakeText(this, e.ToString(), ToastLength.Long).Show();
             }
-            return myDir.AbsolutePath.Substring(1) + "/" + fname;
         }
 
         #region ButtonsClick
@@ -216,34 +202,9 @@ namespace CameraRemote
         {
             byte[] arr = new byte[110592];
             DeviceStream.Read(arr);
-            try
-            {
-                string root = Android.OS.Environment.GetExternalStoragePublicDirectory(Android.OS.Environment.DirectoryPictures).ToString();
-                Java.IO.File myDir = new Java.IO.File(root + "/saved_images");
-                myDir.Mkdirs();
-                Random generator = new Random();
-                int n = 10000;
-                n = generator.Next(n);
-                string fname = "Image-" + n + ".jpg";
-                Java.IO.File file = new Java.IO.File(myDir, fname);
-                using (Stream stream = OpenFileOutput(root + "/saved_images/"+fname, FileCreationMode.Private))
-                {
-                    try
-                    {
-                        stream.Write(arr, 0, arr.Length);
-                        stream.Close();
-                        Toast.MakeText(this, "save", ToastLength.Long).Show();
-                    }
-                    catch 
-                    {
-                        Toast.MakeText(this, "first catch", ToastLength.Long).Show();
-                    }
-                }
-            }
-            catch
-            {
-                Toast.MakeText(this, "second catch", ToastLength.Long).Show();
-            }
+            Android.Graphics.Bitmap bmp = BitmapFactory.DecodeByteArray(arr, 0, arr.Length);
+            iv.SetImageBitmap(bmp);
+            saveImageToExternalStorage_version1(bmp);
         }
         #endregion
 
@@ -317,6 +278,11 @@ namespace CameraRemote
                 data[i] = (byte)msg[i];
             stream.Write(data, 0, msg.Length);
         }
+
+        private void SendData(byte[] bytearray, NetworkStream stream)
+        {
+            stream.Write(bytearray);
+        }
         private string ReceiveData(NetworkStream stream)
         {
             byte[] data = new byte[CHUNK];
@@ -328,5 +294,6 @@ namespace CameraRemote
             return s;
         }
         #endregion
+
     }
 }
