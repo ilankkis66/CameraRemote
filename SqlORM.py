@@ -20,9 +20,9 @@ class Users:
     def check_exist(self, Name):
         self.open_DB()
         sql = self.current.execute(
-            "SELECT * FROM users WHERE Name = '" + Name + ";").fetchone()
+            "SELECT * FROM users WHERE Name = '" + Name + "';").fetchone()
         self.close_DB()
-        return sql[0] != 0
+        return sql is not None
 
     def get_photos_number(self, Name):
         self.open_DB()
@@ -51,7 +51,7 @@ class Users:
 
     def add_photo(self, Name, file):
         sql = "update users set PhotosNumber = '" + str(int(self.get_photos_number(Name)[0]) + 1) + \
-              "',Files = '" + str(self.get_files(Name)[0]) + "\n" + file + "'where Name = '" + Name + "';"
+              "',Files = '" + str(self.get_files(Name)[0]) + file + "\n" + "'where Name = '" + Name + "';"
         self.open_DB()
         try:
             res = self.current.execute(sql)

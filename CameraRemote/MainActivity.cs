@@ -91,6 +91,7 @@ namespace CameraRemote
                 {
                     Android.Graphics.Bitmap bitmap = (Android.Graphics.Bitmap)data.Extras.Get("data");
                     iv.SetImageBitmap(bitmap);
+                    ivCheck.SetImageBitmap(bitmap);
                     saveImageToExternalStorage_version1(bitmap);
                     if (ServerStream != null)
                     {
