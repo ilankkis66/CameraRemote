@@ -14,28 +14,50 @@ class Users:
         """
         self.conn = sqlite3.connect("users.db")
         self.current = self.conn.cursor()
-        self.current.execute("CREATE TABLE IF NOT EXISTS users(username text, photos number int, files string);")
+        self.current.execute("CREATE TABLE IF NOT EXISTS users(Name text, PhotosNumber int, "
+                             "files string, UNIQUE (Name));")
 
-    def check_exist(self, username):
+    def check_exist(self, Name):
         self.open_DB()
         sql = self.current.execute(
-            "SELECT * FROM users WHERE username = '" + username + ";").fetchone()
+            "SELECT * FROM users WHERE Name = '" + Name + ";").fetchone()
         self.close_DB()
         return sql[0] != 0
 
-    def get_photos_number(self, username):
+    def get_photos_number(self, Name):
         self.open_DB()
         res = self.current.execute(
-            "SELECT photos number FROM users WHERE username = '" + username + ";").fetchone()
+            "SELECT PhotosNumber FROM users WHERE Name = '" + Name + "';").fetchone()
         self.close_DB()
         return res
 
-    def insert(self, username):
+    def get_files(self, Name):
         self.open_DB()
-        sql = "INSERT INTO users(username, photos number, files) "
-        sql += "VALUES('" + username + "','" + str(0) + "'+'""');"
-        res = self.current.execute(sql)
-        self.commit()
+        res = self.current.execute(
+            "SELECT Files FROM users WHERE Name = '" + Name + "';").fetchone()
+        self.close_DB()
+        return res
+
+    def insert(self, Name):
+        self.open_DB()
+        sql = "INSERT INTO users(Name, PhotosNumber, files) "
+        sql += "VALUES('" + Name + "','" + str(0) + "','""');"
+        try:
+            res = self.current.execute(sql)
+            self.commit()
+        except Exception as e:
+            print("insert" + str(e))
+        self.close_DB()
+
+    def add_photo(self, Name, file):
+        sql = "update users set PhotosNumber = '" + str(int(self.get_photos_number(Name)[0]) + 1) + \
+              "',Files = '" + str(self.get_files(Name)[0]) + "\n" + file + "'where Name = '" + Name + "';"
+        self.open_DB()
+        try:
+            res = self.current.execute(sql)
+            self.commit()
+        except Exception as e:
+            print("add photo" + str(e))
         self.close_DB()
 
     def close_DB(self):

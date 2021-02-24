@@ -1,12 +1,13 @@
 import socket
 import threading
-import sqlORM
+import SqlORM
 
 IP = "0.0.0.0"
 PORT = 8820
 CHUNK = 1024
 SEPARATOR = "###"
 connected_devices = {}
+users_db = SqlORM.Users()
 
 
 def receive(client_socket):
@@ -30,6 +31,22 @@ def send(client_socket, send_data):
     """
     client_socket.send(send_data.encode())
     # print("send to", get_key_by_address(client_socket), "<--------->", send_data)
+
+
+def accept(server_socket):
+    global connected_devices,users_db
+    try:
+        cs, a = server_socket.accept()
+        data = receive(cs)
+        users_db.insert(data)
+        connected_devices[data] = [cs, a]
+        print(data, a)
+        for key in get_keys_list(connected_devices):
+            if key != data:
+                send(cs, key + "###")
+        send(cs, "ENDD")
+    except socket.error:
+        pass
 
 
 def send_except_one(data, key):
@@ -59,26 +76,9 @@ def main():
     server_socket = socket.socket()
     server_socket.bind((IP, PORT))
     server_socket.listen(2)
-    users_db = sqlORM.
-    cs, a = server_socket.accept()
-    data = receive(cs)
-    connected_devices[data] = [cs, a]
-    send(cs, "ENDD")
-    print("main", a, data)
     server_socket.settimeout(0.0001)
     while True:
-        try:
-            cs, a = server_socket.accept()
-            data = receive(cs)
-            connected_devices[data] = [cs, a]
-            print("while", a, data)
-            for key in get_keys_list(connected_devices):
-                if key != data:
-                    send(cs, key + "###")
-            # send_except_one("ADDD"+SEPARATOR+data, data)
-            send(cs, "ENDD")
-        except socket.error:
-            pass
+        accept(server_socket)
         try:
             for key in get_keys_list(connected_devices):
                 t = threading.Thread(target=handle_client, args=(connected_devices[key][0],))
@@ -88,18 +88,21 @@ def main():
 
 
 def handle_client(client_socket):
+    global users_db
     data = receive_data(client_socket)
-    print("data: ",data)
-    if data[:4].decode() == "COND":
-        data = data.decode().split(SEPARATOR)
-        send(client_socket, "DADR" + SEPARATOR + str(connected_devices[data[1]][1]) + SEPARATOR + "server")
-        send(connected_devices[data[1]][0], "DADR" + SEPARATOR +
-             str(connected_devices[get_key_by_address(client_socket)][1]) + SEPARATOR + "client")
-    elif data[:4].decode() == "SPIC":
-        with open("d:\\ilan\\" + get_key_by_address(client_socket) + ".png", "wb") as f:
-            f.write(data[7:])
-    elif data[0] != "":
-        print("else:" + data)
+    if data:
+        if data[:4].decode() == "COND":
+            data = data.decode().split(SEPARATOR)
+            send(client_socket, "DADR" + SEPARATOR + str(connected_devices[data[1]][1]) + SEPARATOR + "server")
+            send(connected_devices[data[1]][0], "DADR" + SEPARATOR +
+                 str(connected_devices[get_key_by_address(client_socket)][1]) + SEPARATOR + "client")
+        elif data[:4].decode() == "SPIC":
+            num = users_db.get_photos_number(get_key_by_address(client_socket))[0]
+            with open("d:\\ilan\\" + get_key_by_address(client_socket) + " number " + str(num) + ".png", "wb") as f:
+                f.write(data[7:])
+                users_db.add_photo(get_key_by_address(client_socket), f.name)
+        elif data[0] != "":
+            print("else:" + data)
 
     """ 
 def handle_client(client_socket):
