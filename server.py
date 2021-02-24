@@ -1,6 +1,7 @@
 import socket
 import threading
 import SqlORM
+import os
 
 IP = "0.0.0.0"
 PORT = 8820
@@ -8,6 +9,7 @@ CHUNK = 1024
 SEPARATOR = "###"
 connected_devices = {}
 users_db = SqlORM.Users()
+my_dir = os.getcwd()
 
 
 def receive(client_socket):
@@ -34,11 +36,14 @@ def send(client_socket, send_data):
 
 
 def accept(server_socket):
-    global connected_devices,users_db
+    global connected_devices, users_db
     try:
         cs, a = server_socket.accept()
         data = receive(cs)
-        users_db.insert(data)
+        if not users_db.check_exist(data):
+            users_db.insert(data)
+        if not os.path.exists(my_dir + "/photos/" + data):
+            os.mkdir(my_dir + "photos/" + data)
         connected_devices[data] = [cs, a]
         print(data, a)
         for key in get_keys_list(connected_devices):
@@ -77,6 +82,8 @@ def main():
     server_socket.bind((IP, PORT))
     server_socket.listen(2)
     server_socket.settimeout(0.0001)
+    if not os.path.exists(my_dir + "/photos"):
+        os.mkdir(my_dir + "/photos")
     while True:
         accept(server_socket)
         try:
@@ -98,27 +105,12 @@ def handle_client(client_socket):
                  str(connected_devices[get_key_by_address(client_socket)][1]) + SEPARATOR + "client")
         elif data[:4].decode() == "SPIC":
             num = users_db.get_photos_number(get_key_by_address(client_socket))[0]
-            with open("d:\\ilan\\" + get_key_by_address(client_socket) + " number " + str(num) + ".png", "wb") as f:
+            with open(my_dir + "/photos/" + get_key_by_address(client_socket) + "/number " + str(num) + ".png",
+                      "wb") as f:
                 f.write(data[7:])
                 users_db.add_photo(get_key_by_address(client_socket), f.name)
         elif data[0] != "":
             print("else:" + data)
-
-    """ 
-def handle_client(client_socket):
-    try:
-        data = client_socket.recv(2056)
-        if data[0] == "COND" and data[1] in get_keys_list(connected_devices):
-            send(client_socket, "DADR" + SEPARATOR + str(connected_devices[data[1]][1]) + SEPARATOR + "server")
-            send(connected_devices[data[1]][0], "DADR" + SEPARATOR +
-                 str(connected_devices[get_key_by_address(client_socket)][1]) + SEPARATOR + "client")
-        else:
-            print(data)
-            with open("d:\\ilan\\i.png","wb") as f:
-                f.write(data)
-    except:
-        pass
-     """
 
 
 if __name__ == '__main__':
