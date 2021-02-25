@@ -43,7 +43,7 @@ def accept(server_socket):
         if not users_db.check_exist(data):
             users_db.insert(data)
         if not os.path.exists(my_dir + "/photos/" + data):
-            os.mkdir(my_dir + "photos/" + data)
+            os.mkdir(my_dir + "/photos/" + data)
         connected_devices[data] = [cs, a]
         print(data, a)
         for key in get_keys_list(connected_devices):
