@@ -97,18 +97,31 @@ def main():
 def handle_client(client_socket):
     global users_db
     data = receive_data(client_socket)
+    command = data[:4].decode()
+    device = ""
     if data:
-        if data[:4].decode() == "COND":
+        if command == "COND":
             data = data.decode().split(SEPARATOR)
             send(client_socket, "DADR" + SEPARATOR + str(connected_devices[data[1]][1]) + SEPARATOR + "server")
-            send(connected_devices[data[1]][0], "DADR" + SEPARATOR +
-                 str(connected_devices[get_key_by_address(client_socket)][1]) + SEPARATOR + "client")
-        elif data[:4].decode() == "SPIC":
+            send(connected_devices[data[1]][0], "DADR" + SEPARATOR + str(
+                connected_devices[get_key_by_address(client_socket)][
+                    1]) + SEPARATOR + "client" + SEPARATOR + get_key_by_address(client_socket))
+        elif command == "SPIC":
+            i = len(command) + len(SEPARATOR)
+            while data[i] != SEPARATOR.encode()[0]:
+                device += chr(data[i])
+                i += 1
             num = users_db.get_photos_number(get_key_by_address(client_socket))[0]
-            with open(my_dir + "/photos/" + get_key_by_address(client_socket) + "/number " + str(num) + ".png",
+            with open(my_dir + "/photos/" + get_key_by_address(client_socket) + "/number " + str(num) + device + ".png",
                       "wb") as f:
-                f.write(data[7:])
+                f.write(data[len(command) + len(SEPARATOR)+len(device)+len(SEPARATOR):])
                 users_db.add_photo(get_key_by_address(client_socket), f.name)
+            num = users_db.get_photos_number(device)[0]
+            with open(my_dir + "/photos/" + device + "/number " + str(
+                    num) + get_key_by_address(client_socket) + ".png",
+                      "wb") as f:
+                f.write(data[len(command) + len(SEPARATOR) + len(device) + len(SEPARATOR):])
+                users_db.add_photo(device, f.name)
         elif data[0] != "":
             print("else:" + data)
 

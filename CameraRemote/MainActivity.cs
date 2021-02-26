@@ -42,7 +42,7 @@ namespace CameraRemote
         List<string> AllDevices;
         string[] IpRole;
         TcpClient ServerTCP; NetworkStream ServerStream;
-        TcpClient DeviceTcp; NetworkStream DeviceStream;
+        TcpClient DeviceTcp; NetworkStream DeviceStream; string DeviceName="";
         //bool mExternalStorageAvailable = false; bool mExternalStorageWriteable = false;
         [Obsolete]
         protected override void OnCreate(Bundle savedInstanceState)
@@ -103,7 +103,7 @@ namespace CameraRemote
                         //ivCheck.SetImageBitmap(bmp);
                         #endregion
                         #region Send photo to server
-                        string s = "SPIC###";
+                        string s = "SPIC"+ SEPERATOR + DeviceName + SEPERATOR;
                         byte[] b = new byte[ba.Length + s.Length];
                         for (int i = 0; i < s.Length; i++)
                             b[i] = (byte)s[i];
@@ -153,6 +153,7 @@ namespace CameraRemote
         private void LvDevices_ItemClick(object sender, AdapterView.ItemClickEventArgs e)
         {
             SendData("COND" + SEPERATOR + AllDevices[(int)e.Id], ServerStream);
+            DeviceName = AllDevices[(int)e.Id];
             string s = "";
             while (s == "") s = ReceiveData(ServerStream);
             IpRole = GetDeviceIpRole(s);
@@ -177,6 +178,7 @@ namespace CameraRemote
                 {
                     DeviceTcp = new TcpClient(device_ip, devicePort);
                     DeviceStream = DeviceTcp.GetStream();
+                    DeviceName = IpRole[2];
                     string t = "";
                     while (t == "")
                         t = ReceiveData(DeviceStream);
@@ -233,7 +235,9 @@ namespace CameraRemote
             string[] data = s.Split(SEPERATOR);
             for (int i = 2; data[1][i] != "'"[0]; i++)
                 device_ip += data[1][i];
-            return  new string[]{data[0],data[2]};
+            if (data.Length == 4)
+                return new string[] { data[0], data[2], data[3] };
+            return new string[] { data[0], data[2]};
         }
         public static string GetDeviceMacAddress()
         {
