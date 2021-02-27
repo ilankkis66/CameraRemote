@@ -10,6 +10,7 @@ SEPARATOR = "###"
 connected_devices = {}
 users_db = SqlORM.Users()
 my_dir = os.getcwd()
+command_len = 4
 
 
 def receive(client_socket):
@@ -54,13 +55,6 @@ def accept(server_socket):
         pass
 
 
-def send_except_one(data, key):
-    """send data to all players except the players in players[key]"""
-    for k in get_keys_list(connected_devices):
-        if k != key:
-            send(connected_devices[k][0], data)
-
-
 def get_keys_list(dic):
     """return list with all the keys of dic"""
     keys = []
@@ -75,6 +69,14 @@ def get_key_by_address(client_address):
         if connected_devices[key][0] == client_address:
             return key
     return -1
+
+
+def add_photo(data, name, device):
+    num = users_db.get_photos_number(name)[0]
+    with open(my_dir + "/photos/" + name + "/number " + str(num) + " " + device + ".png",
+              "wb") as f:
+        f.write(data)
+        users_db.add_photo(name, f.name)
 
 
 def main():
@@ -98,32 +100,22 @@ def handle_client(client_socket):
     global users_db
     data = receive_data(client_socket)
     command = data[:4].decode()
+    name = get_key_by_address(client_socket)
     device = ""
+
     if data:
         if command == "COND":
             data = data.decode().split(SEPARATOR)
             send(client_socket, "DADR" + SEPARATOR + str(connected_devices[data[1]][1]) + SEPARATOR + "server")
-            send(connected_devices[data[1]][0], "DADR" + SEPARATOR + str(
-                connected_devices[get_key_by_address(client_socket)][
-                    1]) + SEPARATOR + "client" + SEPARATOR + get_key_by_address(client_socket))
+            send(connected_devices[data[1]][0],
+                 "DADR" + SEPARATOR + str(connected_devices[name][1]) + SEPARATOR + "client" + SEPARATOR + name)
         elif command == "SPIC":
             i = len(command) + len(SEPARATOR)
             while data[i] != SEPARATOR.encode()[0]:
                 device += chr(data[i])
                 i += 1
-            num = users_db.get_photos_number(get_key_by_address(client_socket))[0]
-            with open(my_dir + "/photos/" + get_key_by_address(client_socket) + "/number " + str(num) + device + ".png",
-                      "wb") as f:
-                f.write(data[len(command) + len(SEPARATOR)+len(device)+len(SEPARATOR):])
-                users_db.add_photo(get_key_by_address(client_socket), f.name)
-            num = users_db.get_photos_number(device)[0]
-            with open(my_dir + "/photos/" + device + "/number " + str(
-                    num) + get_key_by_address(client_socket) + ".png",
-                      "wb") as f:
-                f.write(data[len(command) + len(SEPARATOR) + len(device) + len(SEPARATOR):])
-                users_db.add_photo(device, f.name)
-        elif data[0] != "":
-            print("else:" + data)
+            add_photo(data[len(command) + len(SEPARATOR) + len(device) + len(SEPARATOR):], name, device)
+            add_photo(data[len(command) + len(SEPARATOR) + len(device) + len(SEPARATOR):], device, name)
 
 
 if __name__ == '__main__':
