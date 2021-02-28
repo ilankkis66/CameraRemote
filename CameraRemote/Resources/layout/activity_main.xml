@@ -10,7 +10,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_x="150dp"
-        android:layout_y="20dp"
+        android:layout_y="70dp"
         android:text="camera"
         tools:ignore="HardcodedText"/> ;camera
     <Button

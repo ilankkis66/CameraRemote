@@ -99,7 +99,7 @@ def main():
 def handle_client(client_socket):
     global users_db
     data = receive_data(client_socket)
-    command = data[:4].decode()
+    command = data[:command_len].decode()
     name = get_key_by_address(client_socket)
     device = ""
 
@@ -114,8 +114,8 @@ def handle_client(client_socket):
             while data[i] != SEPARATOR.encode()[0]:
                 device += chr(data[i])
                 i += 1
-            add_photo(data[len(command) + len(SEPARATOR) + len(device) + len(SEPARATOR):], name, device)
-            add_photo(data[len(command) + len(SEPARATOR) + len(device) + len(SEPARATOR):], device, name)
+            add_photo(data[command_len + len(SEPARATOR) + len(device) + len(SEPARATOR):], name, device)
+            add_photo(data[command_len + len(SEPARATOR) + len(device) + len(SEPARATOR):], device, name)
 
 
 if __name__ == '__main__':

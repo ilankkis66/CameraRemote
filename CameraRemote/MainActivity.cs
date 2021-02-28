@@ -165,7 +165,7 @@ namespace CameraRemote
                     DeviceTcp = tcp_device.AcceptTcpClient();
                     DeviceStream = DeviceTcp.GetStream();
                     SendData("ilan", DeviceStream);
-                    tvStatus.Text = "i am the server, sent -----> ilan";
+                    tvStatus.Text = "i am the server,  sent -----> ilan \nconnected to: " + DeviceName;
                 }
         }
         private void BtGetCon_Click(object sender, EventArgs e)
@@ -182,7 +182,7 @@ namespace CameraRemote
                     string t = "";
                     while (t == "")
                         t = ReceiveData(DeviceStream);
-                    tvStatus.Text = "received------>" + t;
+                    tvStatus.Text = "connected to: "+ DeviceName + "\nreceived------>" + t;
                 }
         }
         private void BtnTakePic_Click(object sender, EventArgs e)
