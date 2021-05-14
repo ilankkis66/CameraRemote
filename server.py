@@ -72,6 +72,8 @@ def get_key_by_address(client_address):
 
 
 def add_photo(data, name, device):
+    if name == "":
+        return
     num = users_db.get_photos_number(name)[0]
     with open(my_dir + "/photos/" + name + "/number " + str(num) + " " + device + ".png",
               "wb") as f:

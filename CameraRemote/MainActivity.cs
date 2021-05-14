@@ -5,24 +5,19 @@ using System.Net.Sockets;
 using Android.Content;
 using System;
 using Android.Support.V7.App;
-using Android.Views;
-using Java.Lang;
-using System.Drawing;
 using Android.Graphics;
 using System.IO;
 using Android;
-using Android.Support.V4.Content;
 using Android.Support.V4.App;
-using Android.Runtime;
 using System.Collections.Generic;
-using Java.IO;
-using Java.Nio;
 using System.Net.NetworkInformation;
 using static Android.Graphics.Bitmap;
-using System.ComponentModel;
-using Android.Graphics.Drawables;
-using System.Drawing.Imaging;
-using System.Text;
+using System.Net;
+using Android.Media;
+using Java.IO;
+using Android.Content.PM;
+using Android.Webkit;
+using System.Windows;
 
 namespace CameraRemote
 {
@@ -43,6 +38,7 @@ namespace CameraRemote
         string[] IpRole;
         TcpClient ServerTCP; NetworkStream ServerStream;
         TcpClient DeviceTcp; NetworkStream DeviceStream; string DeviceName="";
+
         //bool mExternalStorageAvailable = false; bool mExternalStorageWriteable = false;
         [Obsolete]
         protected override void OnCreate(Bundle savedInstanceState)
@@ -85,7 +81,7 @@ namespace CameraRemote
         protected override void OnActivityResult(int requestCode, Result resultCode, Intent data)
         {
             base.OnActivityResult(requestCode, resultCode, data);
-            if (requestCode == 0)//coming from camera
+            if (requestCode == 102)//coming from camera
             {
                 if (resultCode == Result.Ok)
                 {
@@ -99,8 +95,6 @@ namespace CameraRemote
                         MemoryStream stream = new MemoryStream();
                         bitmap.Compress(CompressFormat.Jpeg, 100, stream);
                         byte[] ba = stream.ToArray();
-                        //Android.Graphics.Bitmap bmp = BitmapFactory.DecodeByteArray(ba, 0, ba.Length);
-                        //ivCheck.SetImageBitmap(bmp);
                         #endregion
                         #region Send photo to server
                         string s = "SPIC"+ SEPERATOR + DeviceName + SEPERATOR;
@@ -116,13 +110,22 @@ namespace CameraRemote
                     }
                 }
             }
+            else if (requestCode == 101)
+            {
+                Android.Net.Uri videoUri = data.Data;
+                string root = Android.OS.Environment.GetExternalStoragePublicDirectory(Android.OS.Environment.DirectoryMovies).ToString();
+                string t = root + videoUri.Path;
+                byte[] videoBytes = convertVideoToBytes(this, videoUri);
+                byte[] adir = convetVideotoBytes(t);
+                int i = 5;
+            }
         }
         private void saveImageToExternalStorage_version1(Android.Graphics.Bitmap finalBitmap)
         {
             string root = Android.OS.Environment.GetExternalStoragePublicDirectory(Android.OS.Environment.DirectoryPictures).ToString();
             Java.IO.File myDir = new Java.IO.File(root + "/saved_images");
             myDir.Mkdirs();
-            Random generator = new Random();
+            System.Random generator = new System.Random();
             int n = 10000;
             n = generator.Next(n);
             string fname = "Image-" + n + ".jpg";
@@ -148,6 +151,8 @@ namespace CameraRemote
             }
         }
 
+
+
         #region ButtonsClick
         [Obsolete]
         private void LvDevices_ItemClick(object sender, AdapterView.ItemClickEventArgs e)
@@ -166,6 +171,9 @@ namespace CameraRemote
                     DeviceStream = DeviceTcp.GetStream();
                     SendData("ilan", DeviceStream);
                     tvStatus.Text = "i am the server,  sent -----> ilan \nconnected to: " + DeviceName;
+                    PackageManager pm = this.PackageManager;
+                    Intent intent = pm.GetLaunchIntentForPackage("com.pas.webcam");
+                    StartActivity(intent);
                 }
         }
         private void BtGetCon_Click(object sender, EventArgs e)
@@ -183,12 +191,16 @@ namespace CameraRemote
                     while (t == "")
                         t = ReceiveData(DeviceStream);
                     tvStatus.Text = "connected to: "+ DeviceName + "\nreceived------>" + t;
+                    var uri = Android.Net.Uri.Parse("http://" + device_ip + ":8080");
+                    var intent = new Intent(Intent.ActionView, uri);
+                    StartActivity(intent);
                 }
         }
         private void BtnTakePic_Click(object sender, EventArgs e)
         {
             Intent intent = new Intent("android.media.action.IMAGE_CAPTURE");
-            StartActivityForResult(intent,0);
+            StartActivityForResult(intent,102); //video-101 |||||||| image-102
+
         }
         [Obsolete]
         private void BtSearch_Click(object sender, EventArgs e)
@@ -210,6 +222,37 @@ namespace CameraRemote
             saveImageToExternalStorage_version1(bmp);
         }
         #endregion
+        public static byte[] convertVideoToBytes(Context context, Android.Net.Uri uri)
+        {
+            byte[] videoBytes = null;
+            try
+            {//  w  w w  . j ava 2s . c  o m
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+                var fis = new FileStream(Android.OS.Environment.GetExternalStoragePublicDirectory(Android.OS.Environment.DirectoryMovies).ToString() + uri.Path, FileMode.Open);
+                byte[] buf = new byte[1024];
+                int n;
+                while (-1 != (n = fis.Read(buf)))
+                    baos.Write(buf, 0, n);
+
+                videoBytes = baos.ToByteArray();
+            }
+            catch (System.IO.FileNotFoundException e)
+            {
+                Toast.MakeText(context, e.ToString(), ToastLength.Long).Show();
+            }
+            catch (System.IO.IOException e)
+            {
+                Toast.MakeText(context, e.ToString(), ToastLength.Long).Show();
+            }
+            return videoBytes;
+        }
+
+        public static byte[] convetVideotoBytes(string path)
+        {
+            byte[] myVideoByteArray = System.IO.File.ReadAllBytes(path);
+            return myVideoByteArray;
+        }
 
         #region GetMethod
         private void GetAllDevices(NetworkStream stream)
@@ -253,6 +296,22 @@ namespace CameraRemote
             }
             return "ilan";
         }
+        static string GetIPAddress()
+        {
+            string address = "";
+            WebRequest request = WebRequest.Create("http://checkip.dyndns.org/");
+            using (WebResponse response = request.GetResponse())
+            using (StreamReader stream = new StreamReader(response.GetResponseStream()))
+            {
+                address = stream.ReadToEnd();
+            }
+
+            int first = address.IndexOf("Address: ") + 9;
+            int last = address.LastIndexOf("</body>");
+            address = address.Substring(first, last - first);
+
+            return address;
+        }
         #endregion
 
         [Obsolete]
@@ -273,6 +332,7 @@ namespace CameraRemote
             btSearch.Click += BtSearch_Click;
             btGetPic.Click += BtGetPic_Click;
             lvDevices.ItemClick += LvDevices_ItemClick;
+            tvStatus.Text = GetIPAddress();
         }
 
         #region sending

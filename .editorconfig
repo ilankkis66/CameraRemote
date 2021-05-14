@@ -2,3 +2,6 @@
 
 # CS0809: Obsolete member overrides non-obsolete member
 dotnet_diagnostic.CS0809.severity = suggestion
+
+# IDE0005: Using directive is unnecessary.
+dotnet_diagnostic.IDE0005.severity = none
