@@ -39,6 +39,7 @@
         android:layout_y="450dp"
         android:text="Get Picture"
         tools:ignore="HardcodedText" /> ;GetPic
+    
     <TextView
         android:id="@+id/tvStatus"
         android:text="status"
@@ -46,7 +47,9 @@
         android:layout_height="wrap_content"
         android:layout_x="0dp"
         android:layout_y="0dp"
-        android:textColor="#FFF" /> ;tvStatus
+        android:textColor="#FFF"
+        tools:ignore="HardcodedText" /> ;tvStatus
+    
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -54,7 +57,8 @@
         android:text="path"
         android:layout_x="0dp"
         android:layout_y="350dp"
-        android:textColor="#FFF"/> ;tv
+        android:textColor="#FFF"
+        tools:ignore="HardcodedText" /> ;tv
     <ListView
         android:id="@+id/lvDeviecs"
         android:layout_width="match_parent"

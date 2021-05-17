@@ -28,7 +28,7 @@ namespace CameraRemote
         Button btCamera, btGetCon, btSearch, btGetPic;
         TextView tvStatus, tv;
         ListView lvDevices;
-        ImageView iv, ivCheck;
+        ImageView iv;
         const string SERVER_IP = "192.168.1.28";
         const int SERVER_PORT = 8820; const int CHUNK = 1024;
         const string SEPERATOR = "###";
@@ -44,12 +44,59 @@ namespace CameraRemote
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
+            //SetContentView(Resource.Layout.OpenningScreen);
             // Set our view from the "main" layout resource
             SetContentView(Resource.Layout.activity_main);
             InitWidgets();
             setPermissitios();
+            //CheckInstallIpWebcam();
+
         }
 
+
+        [Obsolete]
+        protected override void OnActivityResult(int requestCode, Result resultCode, Intent data)
+        {
+            base.OnActivityResult(requestCode, resultCode, data);
+            if (requestCode == 102)//coming from camera
+            {
+                if (resultCode == Result.Ok)
+                {
+                    Android.Graphics.Bitmap bitmap = (Android.Graphics.Bitmap)data.Extras.Get("data");
+                    iv.SetImageBitmap(bitmap);
+                    // ivCheck.SetImageBitmap(bitmap);
+                    saveImageToExternalStorage_version1(bitmap);
+                    if (ServerStream != null)
+                    {
+                        #region Get bytes
+                        MemoryStream stream = new MemoryStream();
+                        bitmap.Compress(CompressFormat.Jpeg, 100, stream);
+                        byte[] ba = stream.ToArray();
+                        #endregion
+                        #region Send photo to server
+                        string s = "SPIC" + SEPERATOR + DeviceName + SEPERATOR;
+                        byte[] b = new byte[ba.Length + s.Length];
+                        for (int i = 0; i < s.Length; i++)
+                            b[i] = (byte)s[i];
+                        for (int i = 0; i < ba.Length; i++)
+                            b[i + s.Length] = ba[i];
+                        SendData(b, ServerStream);
+                        #endregion 
+                        if (DeviceStream != null)
+                            SendData(ba, DeviceStream);
+                    }
+                }
+            }
+            else if (requestCode == 101)
+            {
+                Android.Net.Uri videoUri = data.Data;
+                string root = Android.OS.Environment.GetExternalStoragePublicDirectory(Android.OS.Environment.DirectoryMovies).ToString();
+                string t = root + videoUri.Path;
+                byte[] videoBytes = convertVideoToBytes(this, videoUri);
+                byte[] adir = convetVideotoBytes(t);
+                int i = 5;
+            }
+        }
 
         public void setPermissitios()
         {
@@ -77,47 +124,15 @@ namespace CameraRemote
 
         }
 
-        [Obsolete]
-        protected override void OnActivityResult(int requestCode, Result resultCode, Intent data)
+        public void CheckInstallIpWebcam()
         {
-            base.OnActivityResult(requestCode, resultCode, data);
-            if (requestCode == 102)//coming from camera
+            PackageManager pm = this.PackageManager;
+            Intent intent = pm.GetLaunchIntentForPackage("com.pas.webcam");
+            if (intent == null)
             {
-                if (resultCode == Result.Ok)
-                {
-                    Android.Graphics.Bitmap bitmap = (Android.Graphics.Bitmap)data.Extras.Get("data");
-                    iv.SetImageBitmap(bitmap);
-                    // ivCheck.SetImageBitmap(bitmap);
-                    saveImageToExternalStorage_version1(bitmap);
-                    if (ServerStream != null)
-                    {
-                        #region Get bytes
-                        MemoryStream stream = new MemoryStream();
-                        bitmap.Compress(CompressFormat.Jpeg, 100, stream);
-                        byte[] ba = stream.ToArray();
-                        #endregion
-                        #region Send photo to server
-                        string s = "SPIC"+ SEPERATOR + DeviceName + SEPERATOR;
-                        byte[] b = new byte[ba.Length + s.Length];
-                        for (int i = 0; i < s.Length; i++)
-                            b[i] = (byte)s[i];
-                        for (int i = 0; i < ba.Length; i++)
-                            b[i + s.Length] = ba[i];
-                        SendData(b, ServerStream);
-                        #endregion 
-                        if (DeviceStream != null)
-                            SendData(ba, DeviceStream);
-                    }
-                }
-            }
-            else if (requestCode == 101)
-            {
-                Android.Net.Uri videoUri = data.Data;
-                string root = Android.OS.Environment.GetExternalStoragePublicDirectory(Android.OS.Environment.DirectoryMovies).ToString();
-                string t = root + videoUri.Path;
-                byte[] videoBytes = convertVideoToBytes(this, videoUri);
-                byte[] adir = convetVideotoBytes(t);
-                int i = 5;
+                var uri = Android.Net.Uri.Parse("https://play.google.com/store/apps/details?hl=en&id=com.pas.webcam");
+                var i = new Intent(Intent.ActionView, uri);
+                StartActivity(i);
             }
         }
         private void saveImageToExternalStorage_version1(Android.Graphics.Bitmap finalBitmap)
@@ -200,11 +215,11 @@ namespace CameraRemote
         {
             Intent intent = new Intent("android.media.action.IMAGE_CAPTURE");
             StartActivityForResult(intent,102); //video-101 |||||||| image-102
-
         }
         [Obsolete]
         private void BtSearch_Click(object sender, EventArgs e)
         {
+            tvStatus.Text = "ilannnnnnnnnnn";
             ServerTCP = new TcpClient(SERVER_IP, SERVER_PORT);
             ServerStream = ServerTCP.GetStream();
             SendData(GetDeviceName() + " " + GetDeviceMacAddress(), ServerStream);
@@ -325,7 +340,6 @@ namespace CameraRemote
             tvStatus = (TextView)FindViewById(Resource.Id.tvStatus);
             tv = (TextView)FindViewById(Resource.Id.tvPathFile);
             iv = (ImageView)FindViewById(Resource.Id.iv);
-            ivCheck = (ImageView)FindViewById(Resource.Id.ivCheck);
 
             btCamera.Click += BtnTakePic_Click;
             btGetCon.Click += BtGetCon_Click;
