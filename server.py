@@ -23,7 +23,7 @@ def receive(client_socket):
 
 def receive_data(client_socket):
     try:
-        return client_socket.recv(36000)
+        return client_socket.recv(41600)
     except socket.error:
         return ''
 

@@ -220,8 +220,9 @@ namespace CameraRemote
                 string root = Android.OS.Environment.GetExternalStoragePublicDirectory(Android.OS.Environment.DirectoryPictures).ToString();
                 Java.IO.File myDir = new Java.IO.File(root + "/saved_images");
                 myDir.Mkdirs();
-                Java.IO.File file = new Java.IO.File(myDir, "number " + (PhotosNumber++).ToString() + " " + DeviceName + ".jpg");
-                System.IO.File.WriteAllBytes(root + "/saved_images/number " + (PhotosNumber++).ToString() + " " + DeviceName + ".jpg", dataArr);
+                string fname = "number " + (PhotosNumber++).ToString() + " " + DeviceName + ".jpg";
+                Java.IO.File file = new Java.IO.File(myDir, fname);
+                System.IO.File.WriteAllBytes(root + "/saved_images" + fname, dataArr);
                 string s = "SPIC" + SEPERATOR + DeviceName + SEPERATOR;
                 byte[] send = new byte[dataArr.Length + s.Length];
                 for (int i = 0; i < s.Length; i++)
@@ -244,11 +245,23 @@ namespace CameraRemote
         }
         private void BtGetPic_Click(object sender, EventArgs e)
         {
-            byte[] arr = new byte[110592];
-            DeviceStream.Read(arr);
-            Android.Graphics.Bitmap bmp = BitmapFactory.DecodeByteArray(arr, 0, arr.Length);
-            iv.SetImageBitmap(bmp);
-            saveImageToExternalStorage_version1(bmp);
+            using (WebClient webClient = new WebClient())
+            {
+                byte[] dataArr = webClient.DownloadData("http://" + "192.168.1.13" + ":8080/photo.jpg");
+                //save file to local
+                string root = Android.OS.Environment.GetExternalStoragePublicDirectory(Android.OS.Environment.DirectoryPictures).ToString();
+                Java.IO.File myDir = new Java.IO.File(root + "/saved_images");
+                myDir.Mkdirs();
+                Java.IO.File file = new Java.IO.File(myDir, "ilankis.jpg");
+                System.IO.File.WriteAllBytes(root + "/saved_images/ilankis.jpg", dataArr);
+                string s = "SPIC" + SEPERATOR + GetDeviceName() + " " +GetDeviceMacAddress() + SEPERATOR;
+                byte[] send = new byte[dataArr.Length + s.Length];
+                for (int i = 0; i < s.Length; i++)
+                    send[i] = (byte)s[i];
+                for (int i = 0; i < dataArr.Length; i++)
+                    send[i + s.Length] = dataArr[i];
+                SendData(send, ServerStream);
+            }
         }
         #endregion
         public static byte[] convertVideoToBytes(Context context, Android.Net.Uri uri)
