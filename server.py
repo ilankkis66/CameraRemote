@@ -11,6 +11,7 @@ connected_devices = {}
 users_db = SqlORM.Users()
 my_dir = os.getcwd()
 command_len = 4
+Lock = threading.Lock()
 
 
 def receive(client_socket):
@@ -22,7 +23,7 @@ def receive(client_socket):
 
 def receive_data(client_socket):
     try:
-        return client_socket.recv(110592)
+        return client_socket.recv(36000)
     except socket.error:
         return ''
 
@@ -47,10 +48,12 @@ def accept(server_socket):
             os.mkdir(my_dir + "/photos/" + data)
         connected_devices[data] = [cs, a]
         print(data, a)
+        to_send = ""
         for key in get_keys_list(connected_devices):
             if key != data:
-                send(cs, key + "###")
-        send(cs, "ENDD")
+                to_send += key+SEPARATOR
+        to_send += "ENDD"+SEPARATOR
+        send(cs,to_send+"IMGN"+SEPARATOR+str(users_db.get_photos_number(data)[0]))
     except socket.error:
         pass
 
@@ -116,8 +119,10 @@ def handle_client(client_socket):
             while data[i] != SEPARATOR.encode()[0]:
                 device += chr(data[i])
                 i += 1
+            Lock.acquire()
             add_photo(data[command_len + len(SEPARATOR) + len(device) + len(SEPARATOR):], name, device)
             add_photo(data[command_len + len(SEPARATOR) + len(device) + len(SEPARATOR):], device, name)
+            Lock.release()
 
 
 if __name__ == '__main__':

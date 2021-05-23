@@ -18,6 +18,7 @@ using Java.IO;
 using Android.Content.PM;
 using Android.Webkit;
 using System.Windows;
+using System.Threading;
 
 namespace CameraRemote
 {
@@ -34,7 +35,7 @@ namespace CameraRemote
         const string SEPERATOR = "###";
         const int devicePort = 6666;
         string device_ip = ""; 
-        List<string> AllDevices;
+        List<string> AllDevices; int PhotosNumber=0;
         string[] IpRole;
         TcpClient ServerTCP; NetworkStream ServerStream;
         TcpClient DeviceTcp; NetworkStream DeviceStream; string DeviceName="";
@@ -44,12 +45,11 @@ namespace CameraRemote
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
-            //SetContentView(Resource.Layout.OpenningScreen);
             // Set our view from the "main" layout resource
             SetContentView(Resource.Layout.activity_main);
             InitWidgets();
             setPermissitios();
-            //CheckInstallIpWebcam();
+            CheckInstallIpWebcam();
 
         }
 
@@ -206,20 +206,34 @@ namespace CameraRemote
                     while (t == "")
                         t = ReceiveData(DeviceStream);
                     tvStatus.Text = "connected to: "+ DeviceName + "\nreceived------>" + t;
-                    var uri = Android.Net.Uri.Parse("http://" + device_ip + ":8080");
-                    var intent = new Intent(Intent.ActionView, uri);
+                    var uri = Android.Net.Uri.Parse("http://" + device_ip + ":8080/browserfs.html");
+                    var intent = new Intent(Intent.ActionView, uri); 
                     StartActivity(intent);
                 }
         }
         private void BtnTakePic_Click(object sender, EventArgs e)
         {
-            Intent intent = new Intent("android.media.action.IMAGE_CAPTURE");
-            StartActivityForResult(intent,102); //video-101 |||||||| image-102
+            using (WebClient webClient = new WebClient())
+            {
+                byte[] dataArr = webClient.DownloadData("http://" + device_ip + ":8080/photo.jpg");
+                //save file to local
+                string root = Android.OS.Environment.GetExternalStoragePublicDirectory(Android.OS.Environment.DirectoryPictures).ToString();
+                Java.IO.File myDir = new Java.IO.File(root + "/saved_images");
+                myDir.Mkdirs();
+                Java.IO.File file = new Java.IO.File(myDir, "number " + (PhotosNumber++).ToString() + " " + DeviceName + ".jpg");
+                System.IO.File.WriteAllBytes(root + "/saved_images/number " + (PhotosNumber++).ToString() + " " + DeviceName + ".jpg", dataArr);
+                string s = "SPIC" + SEPERATOR + DeviceName + SEPERATOR;
+                byte[] send = new byte[dataArr.Length + s.Length];
+                for (int i = 0; i < s.Length; i++)
+                    send[i] = (byte)s[i];
+                for (int i = 0; i < dataArr.Length; i++)
+                    send[i + s.Length] = dataArr[i];
+                SendData(send, ServerStream);
+            }
         }
         [Obsolete]
         private void BtSearch_Click(object sender, EventArgs e)
         {
-            tvStatus.Text = "ilannnnnnnnnnn";
             ServerTCP = new TcpClient(SERVER_IP, SERVER_PORT);
             ServerStream = ServerTCP.GetStream();
             SendData(GetDeviceName() + " " + GetDeviceMacAddress(), ServerStream);
@@ -273,12 +287,14 @@ namespace CameraRemote
         private void GetAllDevices(NetworkStream stream)
         {
             string d = "";
-            while (!d.EndsWith("ENDD"))
+            while (!d.Contains("ENDD"))
                 d += ReceiveData(stream);
-            string[] a = d.Substring(0,d.Length-4).Split(SEPERATOR);
+            string[] a = d.Split(SEPERATOR);
             AllDevices = new List<string>();
-            for (int i = 0; i < a.Length-1; i++)
+            for (int i = 0; i < a.Length-3; i++)
                 AllDevices.Add(a[i]);
+            PhotosNumber = int.Parse(a[a.Length - 1]);
+           
         }
         public static string GetDeviceName()
         {
@@ -310,23 +326,8 @@ namespace CameraRemote
                 }
             }
             return "ilan";
-        }
-        static string GetIPAddress()
-        {
-            string address = "";
-            WebRequest request = WebRequest.Create("http://checkip.dyndns.org/");
-            using (WebResponse response = request.GetResponse())
-            using (StreamReader stream = new StreamReader(response.GetResponseStream()))
-            {
-                address = stream.ReadToEnd();
-            }
-
-            int first = address.IndexOf("Address: ") + 9;
-            int last = address.LastIndexOf("</body>");
-            address = address.Substring(first, last - first);
-
-            return address;
-        }
+        } 
+        
         #endregion
 
         [Obsolete]
@@ -346,7 +347,6 @@ namespace CameraRemote
             btSearch.Click += BtSearch_Click;
             btGetPic.Click += BtGetPic_Click;
             lvDevices.ItemClick += LvDevices_ItemClick;
-            tvStatus.Text = GetIPAddress();
         }
 
         #region sending
