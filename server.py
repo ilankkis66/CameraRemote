@@ -2,6 +2,7 @@ import socket
 import threading
 import SqlORM
 import os
+import requests
 
 IP = "0.0.0.0"
 PORT = 8820
@@ -12,6 +13,7 @@ users_db = SqlORM.Users()
 my_dir = os.getcwd()
 command_len = 4
 Lock = threading.Lock()
+SizeOfSize = 10
 
 
 def receive(client_socket):
@@ -23,7 +25,7 @@ def receive(client_socket):
 
 def receive_data(client_socket):
     try:
-        return client_socket.recv(41600)
+        return client_socket.recv(1000000)
     except socket.error:
         return ''
 
@@ -51,9 +53,9 @@ def accept(server_socket):
         to_send = ""
         for key in get_keys_list(connected_devices):
             if key != data:
-                to_send += key+SEPARATOR
-        to_send += "ENDD"+SEPARATOR
-        send(cs,to_send+"IMGN"+SEPARATOR+str(users_db.get_photos_number(data)[0]))
+                to_send += key + SEPARATOR
+        to_send += "ENDD" + SEPARATOR
+        send(cs, to_send + "IMGN" + SEPARATOR + str(users_db.get_photos_number(data)[0]))
     except socket.error:
         pass
 
@@ -104,25 +106,31 @@ def main():
 def handle_client(client_socket):
     global users_db
     data = receive_data(client_socket)
-    command = data[:command_len].decode()
     name = get_key_by_address(client_socket)
     device = ""
 
     if data:
+        command = data[:command_len].decode()
         if command == "COND":
             data = data.decode().split(SEPARATOR)
             send(client_socket, "DADR" + SEPARATOR + str(connected_devices[data[1]][1]) + SEPARATOR + "server")
             send(connected_devices[data[1]][0],
                  "DADR" + SEPARATOR + str(connected_devices[name][1]) + SEPARATOR + "client" + SEPARATOR + name)
         elif command == "SPIC":
-            i = len(command) + len(SEPARATOR)
-            while data[i] != SEPARATOR.encode()[0]:
-                device += chr(data[i])
-                i += 1
-            Lock.acquire()
-            add_photo(data[command_len + len(SEPARATOR) + len(device) + len(SEPARATOR):], name, device)
-            add_photo(data[command_len + len(SEPARATOR) + len(device) + len(SEPARATOR):], device, name)
-            Lock.release()
+            print(data)
+            try:
+                i = len(command) + len(SEPARATOR)
+                while data[i] != SEPARATOR.encode()[0]:
+                    device += chr(data[i])
+                    i += 1
+                Lock.acquire()
+                url = "http://" + connected_devices[device][1][0] + ":8080/photo.jpg"
+                data = requests.get(url)
+                add_photo(data.content, name, device)
+                add_photo(data.content, device, name)
+                Lock.release()
+            except Exception as e:
+                print(e)
 
 
 if __name__ == '__main__':

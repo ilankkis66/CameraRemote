@@ -38,25 +38,6 @@
         android:layout_y="450dp"
         android:text="Get Picture"
         tools:ignore="HardcodedText" /> ;GetPic
-    
-    <TextView
-        android:id="@+id/tvStatus"
-        android:text="status"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_x="0dp"
-        android:layout_y="0dp"
-        android:textColor="#FFF"
-        tools:ignore="HardcodedText" /> ;tvStatus
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/tvPathFile"
-        android:text="path"
-        android:layout_x="0dp"
-        android:layout_y="350dp"
-        android:textColor="#FFF"
-        tools:ignore="HardcodedText" /> ;tv
     <ListView
         android:id="@+id/lvDeviecs"
         android:layout_width="match_parent"
@@ -64,19 +45,11 @@
         android:layout_x="0dp"
         android:layout_y="200dp"/> ;lvDevices
     <ImageView
-        android:layout_width="100dp"
-        android:layout_height="100dp"
-        android:layout_x="150dp"
-        android:layout_y="400dp"
+        android:layout_width="match_parent"
+        android:layout_height="300dp"
+        android:layout_x="0dp"
+        android:layout_y="0dp"
         android:id="@+id/iv"
         android:contentDescription="description"
         tools:ignore="HardcodedText" /> ;iv
-    <ImageView
-        android:layout_width="350dp"
-        android:layout_height="500dp"
-        android:layout_x="0dp"
-        android:layout_y="0dp"
-        android:id="@+id/ivCheck"
-        android:contentDescription="description"
-        tools:ignore="HardcodedText" /> ;ivCheck
 </AbsoluteLayout>
