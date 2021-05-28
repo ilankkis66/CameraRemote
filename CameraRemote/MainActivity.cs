@@ -26,20 +26,18 @@ namespace CameraRemote
     [Activity(Label = "@string/app_name", Theme = "@style/AppTheme", MainLauncher = true)]
     public class MainActivity : AppCompatActivity
     {
-        Button btCamera, btGetCon, btSearch, btGetPic;
-        ListView lvDevices;
-        ImageView iv;
+        Button btCamera, btGetCon, btSearch;
+        ListView lvDevices; ImageView iv;
+
         private const string SERVER_IP = "192.168.1.28";
         private const int SERVER_PORT = 8820; private const int CHUNK = 1024;
         private const string SEPERATOR = "###";
         private const int devicePort = 6666;
+
         private string device_ip = "";
         private List<string> AllDevices = new List<string>(); private int PhotosNumber=0;
-        private string[] IpRole;
         private TcpClient ServerTCP; private NetworkStream ServerStream;
         private TcpClient DeviceTcp; private NetworkStream DeviceStream; private string DeviceName="";
-
-        //bool mExternalStorageAvailable = false; bool mExternalStorageWriteable = false;
         [Obsolete]
         protected override void OnCreate(Bundle savedInstanceState)
         {
@@ -95,53 +93,58 @@ namespace CameraRemote
         [Obsolete]
         private void LvDevices_ItemClick(object sender, AdapterView.ItemClickEventArgs e)
         {
+            //send wich device you want to connect to and get its details from server
             SendData("COND" + SEPERATOR + AllDevices[(int)e.Id], ServerStream);
             DeviceName = AllDevices[(int)e.Id];
             string s = "";
             while (s == "") s = ReceiveData(ServerStream);
-            IpRole = GetDeviceIpRole(s);
-            if (s.StartsWith("DADR"))
-                if (IpRole[1] == "server")
-                {
-                    //connect to the device
-                    TcpListener tcp_device = new TcpListener(devicePort);
-                    tcp_device.Start();
-                    DeviceTcp = tcp_device.AcceptTcpClient();
-                    DeviceStream = DeviceTcp.GetStream();
+            string[] IpRole = GetDeviceIpRole(s);
 
-                    //open the stream
-                    PackageManager pm = this.PackageManager;
-                    Intent intent = pm.GetLaunchIntentForPackage("com.pas.webcam");
-                    StartActivity(intent);
-                }
+            if (s.StartsWith("DADR") && IpRole[1] == "server")
+            {
+                //connect to the device
+                TcpListener tcp_device = new TcpListener(devicePort);
+                tcp_device.Start();
+                DeviceTcp = tcp_device.AcceptTcpClient();
+                DeviceStream = DeviceTcp.GetStream();
+
+                //open the stream
+                PackageManager pm = PackageManager;
+                Intent intent = pm.GetLaunchIntentForPackage("com.pas.webcam");
+                StartActivity(intent);
+            }
         }
 
         [Obsolete]
         private void BtGetCon_Click(object sender, EventArgs e)
         {
+            //get device details from server
             string s = "";
             while(s == "")  s = ReceiveData(ServerStream); 
-            IpRole = GetDeviceIpRole(s);
-            if (s.StartsWith("DADR"))
-                if (IpRole[1] == "client")
-                {
-                    //connect to the device
-                    DeviceTcp = new TcpClient(device_ip, devicePort);
-                    DeviceStream = DeviceTcp.GetStream();
-                    DeviceName = IpRole[2];
+            string[] IpRole = GetDeviceIpRole(s);
 
-                    //connect to the stream
-                    var uri = Android.Net.Uri.Parse("http://" + device_ip + ":8080/browserfs.html");
-                    var intent = new Intent(Intent.ActionView, uri); 
-                    StartActivity(intent);
-                }
+            if (s.StartsWith("DADR") && IpRole[1] == "client")
+            {
+                //connect to the device
+                DeviceTcp = new TcpClient(device_ip, devicePort);
+                DeviceStream = DeviceTcp.GetStream();
+                DeviceName = IpRole[2];
+
+                //connect to the stream
+                var uri = Android.Net.Uri.Parse("http://" + device_ip + ":8080/browserfs.html");
+                var intent = new Intent(Intent.ActionView, uri);
+                StartActivity(intent);
+            }
+
             ChangeLayout();
         }
         private void BtnTakePic_Click(object sender, EventArgs e)
         {
             using (WebClient webClient = new WebClient())
             {
+                //download image data from google
                 byte[] dataArr = webClient.DownloadData("http://" + device_ip + ":8080/photo.jpg");
+
                 //save file to local
                 string root = Android.OS.Environment.GetExternalStoragePublicDirectory(Android.OS.Environment.DirectoryPictures).ToString();
                 string fname = "number " + (PhotosNumber++).ToString() + " " + DeviceName + ".jpg";
@@ -167,24 +170,6 @@ namespace CameraRemote
                             (ApplicationContext, Android.Resource.Layout.SimpleListItem1, AllDevices);
             lvDevices.SetAdapter(arrayAdapter);
         }
-        private void BtGetPic_Click(object sender, EventArgs e)
-        {
-            //using (WebClient webClient = new WebClient())
-            //{
-            //    byte[] dataArr = webClient.DownloadData("http://" + "192.168.1.13" + ":8080/photo.jpg");
-            //    //save file to local
-            //    string root = Android.OS.Environment.GetExternalStoragePublicDirectory(Android.OS.Environment.DirectoryPictures).ToString();
-            //    Java.IO.File myDir = new Java.IO.File(root + "/saved_images");
-            //    myDir.Mkdirs();
-            //    Java.IO.File file = new Java.IO.File(myDir, "ilankiis.jpg");
-            //    System.IO.File.WriteAllBytes(root + "/saved_images/ilankiis.jpg", dataArr);
-            //    Bitmap bt = BitmapFactory.DecodeByteArray(dataArr, 0, dataArr.Length);
-            //    iv.SetImageBitmap(bt);
-            //    string s = "SPIC" + SEPERATOR + GetDeviceName() + " " + GetDeviceMacAddress() + SEPERATOR;
-            //    SendData(s, ServerStream);
-            //}
-        }
-
         #endregion
 
 
@@ -272,13 +257,11 @@ namespace CameraRemote
             btCamera = (Button)FindViewById(Resource.Id.btnTakePic);
             btGetCon = (Button)FindViewById(Resource.Id.btnGetCon);
             btSearch = (Button)FindViewById(Resource.Id.btnSearch);
-            btGetPic = (Button)FindViewById(Resource.Id.btnGetPic);
-            iv = (ImageView)FindViewById(Resource.Id.iv);
+            iv = (ImageView)FindViewById(Resource.Id.ivImage);
 
             btCamera.Click += BtnTakePic_Click;
             btGetCon.Click += BtGetCon_Click;
             btSearch.Click += BtSearch_Click;
-            btGetPic.Click += BtGetPic_Click;
             lvDevices.ItemClick += LvDevices_ItemClick;
         }
 

@@ -30,14 +30,6 @@
         android:layout_y="300dp"
         android:text="Get Connection"
         tools:ignore="HardcodedText" /> ;GetCon
-    <Button
-        android:id="@+id/btnGetPic"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_x="0dp"
-        android:layout_y="450dp"
-        android:text="Get Picture"
-        tools:ignore="HardcodedText" /> ;GetPic
     <ListView
         android:id="@+id/lvDeviecs"
         android:layout_width="match_parent"
@@ -45,11 +37,11 @@
         android:layout_x="0dp"
         android:layout_y="200dp"/> ;lvDevices
     <ImageView
+        android:id="@+id/ivImage"
         android:layout_width="match_parent"
         android:layout_height="300dp"
         android:layout_x="0dp"
         android:layout_y="0dp"
-        android:id="@+id/iv"
         android:contentDescription="description"
         tools:ignore="HardcodedText" /> ;iv
 </AbsoluteLayout>

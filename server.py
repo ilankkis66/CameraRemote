@@ -13,7 +13,6 @@ users_db = SqlORM.Users()
 my_dir = os.getcwd()
 command_len = 4
 Lock = threading.Lock()
-SizeOfSize = 10
 
 
 def receive(client_socket):
@@ -23,14 +22,12 @@ def receive(client_socket):
         return ''
 
 
-
 def send(client_socket, send_data):
     """
     :param client_socket:
     :type send_data: string
     """
     client_socket.send(send_data.encode())
-    # print("send to", get_key_by_address(client_socket), "<--------->", send_data)
 
 
 def accept(server_socket):
@@ -71,6 +68,7 @@ def get_key_by_address(client_address):
 
 
 def add_photo(data, name, device):
+    global users_db
     if name == "":
         return
     num = users_db.get_photos_number(name)[0]
