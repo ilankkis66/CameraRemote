@@ -23,12 +23,6 @@ def receive(client_socket):
         return ''
 
 
-def receive_data(client_socket):
-    try:
-        return client_socket.recv(1000000)
-    except socket.error:
-        return ''
-
 
 def send(client_socket, send_data):
     """
@@ -105,24 +99,20 @@ def main():
 
 def handle_client(client_socket):
     global users_db
-    data = receive_data(client_socket)
+    data = receive(client_socket)
     name = get_key_by_address(client_socket)
-    device = ""
 
     if data:
-        command = data[:command_len].decode()
+        command = data[:command_len]
         if command == "COND":
-            data = data.decode().split(SEPARATOR)
+            data = data.split(SEPARATOR)
             send(client_socket, "DADR" + SEPARATOR + str(connected_devices[data[1]][1]) + SEPARATOR + "server")
             send(connected_devices[data[1]][0],
                  "DADR" + SEPARATOR + str(connected_devices[name][1]) + SEPARATOR + "client" + SEPARATOR + name)
         elif command == "SPIC":
             print(data)
             try:
-                i = len(command) + len(SEPARATOR)
-                while data[i] != SEPARATOR.encode()[0]:
-                    device += chr(data[i])
-                    i += 1
+                device = data.split(SEPARATOR)[1]
                 Lock.acquire()
                 url = "http://" + connected_devices[device][1][0] + ":8080/photo.jpg"
                 data = requests.get(url)

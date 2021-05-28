@@ -29,15 +29,15 @@ namespace CameraRemote
         Button btCamera, btGetCon, btSearch, btGetPic;
         ListView lvDevices;
         ImageView iv;
-        public const string SERVER_IP = "192.168.1.28";
-        public const int SERVER_PORT = 8820; public const int CHUNK = 1024;
-        public const string SEPERATOR = "###";
-        public const int devicePort = 6666;
-        public string device_ip = "";
-        public List<string> AllDevices; public int PhotosNumber=0;
-        public string[] IpRole;
-        public TcpClient ServerTCP; public NetworkStream ServerStream;
-        public TcpClient DeviceTcp; public NetworkStream DeviceStream; public string DeviceName="";
+        private const string SERVER_IP = "192.168.1.28";
+        private const int SERVER_PORT = 8820; private const int CHUNK = 1024;
+        private const string SEPERATOR = "###";
+        private const int devicePort = 6666;
+        private string device_ip = "";
+        private List<string> AllDevices = new List<string>(); private int PhotosNumber=0;
+        private string[] IpRole;
+        private TcpClient ServerTCP; private NetworkStream ServerStream;
+        private TcpClient DeviceTcp; private NetworkStream DeviceStream; private string DeviceName="";
 
         //bool mExternalStorageAvailable = false; bool mExternalStorageWriteable = false;
         [Obsolete]
@@ -49,7 +49,7 @@ namespace CameraRemote
             InitWidgets();
             setPermissitios();
             CheckInstallIpWebcam();
-
+            //Search();
         }
 
         public void setPermissitios()
@@ -103,16 +103,20 @@ namespace CameraRemote
             if (s.StartsWith("DADR"))
                 if (IpRole[1] == "server")
                 {
+                    //connect to the device
                     TcpListener tcp_device = new TcpListener(devicePort);
                     tcp_device.Start();
                     DeviceTcp = tcp_device.AcceptTcpClient();
                     DeviceStream = DeviceTcp.GetStream();
-                    SendData("ilan", DeviceStream);
+
+                    //open the stream
                     PackageManager pm = this.PackageManager;
                     Intent intent = pm.GetLaunchIntentForPackage("com.pas.webcam");
                     StartActivity(intent);
                 }
         }
+
+        [Obsolete]
         private void BtGetCon_Click(object sender, EventArgs e)
         {
             string s = "";
@@ -121,18 +125,17 @@ namespace CameraRemote
             if (s.StartsWith("DADR"))
                 if (IpRole[1] == "client")
                 {
+                    //connect to the device
                     DeviceTcp = new TcpClient(device_ip, devicePort);
                     DeviceStream = DeviceTcp.GetStream();
                     DeviceName = IpRole[2];
-                    string t = "";
-                    while (t == "")
-                        t = ReceiveData(DeviceStream);
+
+                    //connect to the stream
                     var uri = Android.Net.Uri.Parse("http://" + device_ip + ":8080/browserfs.html");
                     var intent = new Intent(Intent.ActionView, uri); 
                     StartActivity(intent);
                 }
-           //Intent intentTP = new Intent(this, typeof(TakePhoto));
-           //StartActivity(intentTP);
+            ChangeLayout();
         }
         private void BtnTakePic_Click(object sender, EventArgs e)
         {
@@ -141,13 +144,14 @@ namespace CameraRemote
                 byte[] dataArr = webClient.DownloadData("http://" + device_ip + ":8080/photo.jpg");
                 //save file to local
                 string root = Android.OS.Environment.GetExternalStoragePublicDirectory(Android.OS.Environment.DirectoryPictures).ToString();
-                Java.IO.File myDir = new Java.IO.File(root + "/saved_images");
-                myDir.Mkdirs();
                 string fname = "number " + (PhotosNumber++).ToString() + " " + DeviceName + ".jpg";
-                Java.IO.File file = new Java.IO.File(myDir, fname);
-                System.IO.File.WriteAllBytes(file.Path,dataArr);
+                System.IO.File.WriteAllBytes(root + fname,dataArr);
+
+                //show the image on the screen
                 Bitmap bt = BitmapFactory.DecodeByteArray(dataArr, 0, dataArr.Length);
                 iv.SetImageBitmap(bt);
+
+                //send to the server to save picture
                 string s = "SPIC" + SEPERATOR + DeviceName + SEPERATOR;
                 SendData(s, ServerStream);
             }
@@ -165,22 +169,55 @@ namespace CameraRemote
         }
         private void BtGetPic_Click(object sender, EventArgs e)
         {
-            using (WebClient webClient = new WebClient())
-            {
-                byte[] dataArr = webClient.DownloadData("http://" + "192.168.1.13" + ":8080/photo.jpg");
-                //save file to local
-                string root = Android.OS.Environment.GetExternalStoragePublicDirectory(Android.OS.Environment.DirectoryPictures).ToString();
-                Java.IO.File myDir = new Java.IO.File(root + "/saved_images");
-                myDir.Mkdirs();
-                Java.IO.File file = new Java.IO.File(myDir, "ilankiis.jpg");
-                System.IO.File.WriteAllBytes(root + "/saved_images/ilankiis.jpg", dataArr);
-                Bitmap bt = BitmapFactory.DecodeByteArray(dataArr, 0, dataArr.Length);
-                iv.SetImageBitmap(bt);
-                string s = "SPIC" + SEPERATOR + GetDeviceName() + " " + GetDeviceMacAddress() + SEPERATOR;
-                SendData(s, ServerStream);
-            }
+            //using (WebClient webClient = new WebClient())
+            //{
+            //    byte[] dataArr = webClient.DownloadData("http://" + "192.168.1.13" + ":8080/photo.jpg");
+            //    //save file to local
+            //    string root = Android.OS.Environment.GetExternalStoragePublicDirectory(Android.OS.Environment.DirectoryPictures).ToString();
+            //    Java.IO.File myDir = new Java.IO.File(root + "/saved_images");
+            //    myDir.Mkdirs();
+            //    Java.IO.File file = new Java.IO.File(myDir, "ilankiis.jpg");
+            //    System.IO.File.WriteAllBytes(root + "/saved_images/ilankiis.jpg", dataArr);
+            //    Bitmap bt = BitmapFactory.DecodeByteArray(dataArr, 0, dataArr.Length);
+            //    iv.SetImageBitmap(bt);
+            //    string s = "SPIC" + SEPERATOR + GetDeviceName() + " " + GetDeviceMacAddress() + SEPERATOR;
+            //    SendData(s, ServerStream);
+            //}
         }
+
         #endregion
+
+
+        [Obsolete]
+        private void Search()
+        {
+            //send to the server
+            ServerTCP = new TcpClient(SERVER_IP, SERVER_PORT);
+            ServerStream = ServerTCP.GetStream();
+            SendData(GetDeviceName() + " " + GetDeviceMacAddress(), ServerStream);
+
+            //get the connected devices from the server 
+            GetAllDevices(ServerStream);
+            ArrayAdapter<string> arrayAdapter = new ArrayAdapter<string>
+                            (ApplicationContext, Android.Resource.Layout.SimpleListItem1, AllDevices);
+            lvDevices.SetAdapter(arrayAdapter);
+        }
+
+        [Obsolete]
+        private void ChangeLayout()
+        {
+            //change the text and the OnClick of the button
+            btGetCon.SetX(150);
+            btGetCon.Text = "Take Pic";
+            btGetCon.Click -= BtGetCon_Click;
+            btGetCon.Click += BtnTakePic_Click;
+
+            //clear lvDevices items
+            List<string> a = new List<string>();
+            ArrayAdapter<string> arrayAdapter = new ArrayAdapter<string>
+                            (ApplicationContext, Android.Resource.Layout.SimpleListItem1, a);
+            lvDevices.SetAdapter(arrayAdapter);
+        }
 
         #region GetMethod
         private void GetAllDevices(NetworkStream stream)
@@ -189,7 +226,6 @@ namespace CameraRemote
             while (!d.Contains("ENDD"))
                 d += ReceiveData(stream);
             string[] a = d.Split(SEPERATOR);
-            AllDevices = new List<string>();
             for (int i = 0; i < a.Length-3; i++)
                 AllDevices.Add(a[i]);
             PhotosNumber = int.Parse(a[a.Length - 1]);
@@ -224,7 +260,7 @@ namespace CameraRemote
 
                 }
             }
-            return "ilan";
+            return "";
         } 
         
         #endregion
