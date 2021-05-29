@@ -4,8 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#008800">
-    android:background="#008800">
+    android:background="@drawable/bg">
     <Button 
         android:id="@+id/btnTakePic"
         android:layout_width="wrap_content"
@@ -27,9 +26,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_x="125dp"
-        android:layout_y="300dp"
+        android:layout_y="450dp"
         android:text="Get Connection"
-        tools:ignore="HardcodedText" /> ;GetCon
+        tools:ignore="HardcodedText"/> ;GetCon
     <ListView
         android:id="@+id/lvDeviecs"
         android:layout_width="match_parent"

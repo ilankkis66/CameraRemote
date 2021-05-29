@@ -30,27 +30,6 @@ def send(client_socket, send_data):
     client_socket.send(send_data.encode())
 
 
-def accept(server_socket):
-    global connected_devices, users_db
-    try:
-        cs, a = server_socket.accept()
-        data = receive(cs)
-        if not users_db.check_exist(data):
-            users_db.insert(data)
-        if not os.path.exists(my_dir + "/photos/" + data):
-            os.mkdir(my_dir + "/photos/" + data)
-        connected_devices[data] = [cs, a]
-        print(data, a)
-        to_send = ""
-        for key in get_keys_list(connected_devices):
-            if key != data:
-                to_send += key + SEPARATOR
-        to_send += "ENDD" + SEPARATOR
-        send(cs, to_send + "IMGN" + SEPARATOR + str(users_db.get_photos_number(data)[0]))
-    except socket.error:
-        pass
-
-
 def get_keys_list(dic):
     """return list with all the keys of dic"""
     keys = []
@@ -78,6 +57,27 @@ def add_photo(data, name, device):
         users_db.add_photo(name, f.name)
 
 
+def accept(server_socket):
+    global connected_devices, users_db
+    try:
+        cs, a = server_socket.accept()
+        data = receive(cs)
+        if not users_db.check_exist(data):
+            users_db.insert(data)
+        if not os.path.exists(my_dir + "/photos/" + data):
+            os.mkdir(my_dir + "/photos/" + data)
+        connected_devices[data] = [cs, a]
+        print(data, a)
+        to_send = ""
+        for key in get_keys_list(connected_devices):
+            if key != data:
+                to_send += key + SEPARATOR
+        to_send += "ENDD" + SEPARATOR + "IMGN" + SEPARATOR + str(users_db.get_photos_number(data)[0])
+        send(cs, to_send)
+    except socket.error:
+        pass
+
+
 def main():
     server_socket = socket.socket()
     server_socket.bind((IP, PORT))
@@ -100,25 +100,25 @@ def handle_client(client_socket):
     data = receive(client_socket)
     name = get_key_by_address(client_socket)
 
-    if data:
-        command = data[:command_len]
+    if data and name != -1:
+        data = data.split(SEPARATOR)
+        command, device = data[0], data[1]
+        device_ip = str(connected_devices[device][1][0])
         if command == "COND":
-            data = data.split(SEPARATOR)
-            send(client_socket, "DADR" + SEPARATOR + str(connected_devices[data[1]][1]) + SEPARATOR + "server")
-            send(connected_devices[data[1]][0],
+            send(client_socket, "DADR" + SEPARATOR + device_ip + SEPARATOR + "server")
+            send(connected_devices[device][0],
                  "DADR" + SEPARATOR + str(connected_devices[name][1]) + SEPARATOR + "client" + SEPARATOR + name)
         elif command == "SPIC":
-            print(data)
             try:
-                device = data.split(SEPARATOR)[1]
                 Lock.acquire()
-                url = "http://" + connected_devices[device][1][0] + ":8080/photo.jpg"
+                url = "http://" + device_ip + ":8080/photo.jpg"
                 data = requests.get(url)
                 add_photo(data.content, name, device)
                 add_photo(data.content, device, name)
                 Lock.release()
             except Exception as e:
                 print(e)
+        print(data.split(SEPARATOR))
 
 
 if __name__ == '__main__':

@@ -114,7 +114,6 @@ namespace CameraRemote
                 StartActivity(intent);
             }
         }
-
         [Obsolete]
         private void BtGetCon_Click(object sender, EventArgs e)
         {
@@ -138,27 +137,6 @@ namespace CameraRemote
 
             ChangeLayout();
         }
-        private void BtnTakePic_Click(object sender, EventArgs e)
-        {
-            using (WebClient webClient = new WebClient())
-            {
-                //download image data from google
-                byte[] dataArr = webClient.DownloadData("http://" + device_ip + ":8080/photo.jpg");
-
-                //save file to local
-                string root = Android.OS.Environment.GetExternalStoragePublicDirectory(Android.OS.Environment.DirectoryPictures).ToString();
-                string fname = "number " + (PhotosNumber++).ToString() + " " + DeviceName + ".jpg";
-                System.IO.File.WriteAllBytes(root + fname,dataArr);
-
-                //show the image on the screen
-                Bitmap bt = BitmapFactory.DecodeByteArray(dataArr, 0, dataArr.Length);
-                iv.SetImageBitmap(bt);
-
-                //send to the server to save picture
-                string s = "SPIC" + SEPERATOR + DeviceName + SEPERATOR;
-                SendData(s, ServerStream);
-            }
-        }
         [Obsolete]
         private void BtSearch_Click(object sender, EventArgs e)
         {
@@ -169,6 +147,27 @@ namespace CameraRemote
             ArrayAdapter<string> arrayAdapter = new ArrayAdapter<string>
                             (ApplicationContext, Android.Resource.Layout.SimpleListItem1, AllDevices);
             lvDevices.SetAdapter(arrayAdapter);
+        }
+        private void BtnTakePic_Click(object sender, EventArgs e)
+        {
+            using (WebClient webClient = new WebClient())
+            {
+                //download image data from google
+                byte[] dataArr = webClient.DownloadData("http://" + device_ip + ":8080/photo.jpg");
+
+                //save file to local
+                string root = Android.OS.Environment.GetExternalStoragePublicDirectory(Android.OS.Environment.DirectoryPictures).ToString();
+                string fname = "number " + (PhotosNumber++).ToString() + " " + DeviceName + ".jpg";
+                System.IO.File.WriteAllBytes(root + fname, dataArr);
+
+                //show the image on the screen
+                Bitmap bt = BitmapFactory.DecodeByteArray(dataArr, 0, dataArr.Length);
+                iv.SetImageBitmap(bt);
+
+                //send to the server to save picture
+                string s = "SPIC" + SEPERATOR + DeviceName + SEPERATOR;
+                SendData(s, ServerStream);
+            }
         }
         #endregion
 
@@ -188,23 +187,8 @@ namespace CameraRemote
             lvDevices.SetAdapter(arrayAdapter);
         }
 
-        [Obsolete]
-        private void ChangeLayout()
-        {
-            //change the text and the OnClick of the button
-            btGetCon.SetX(150);
-            btGetCon.Text = "Take Pic";
-            btGetCon.Click -= BtGetCon_Click;
-            btGetCon.Click += BtnTakePic_Click;
 
-            //clear lvDevices items
-            List<string> a = new List<string>();
-            ArrayAdapter<string> arrayAdapter = new ArrayAdapter<string>
-                            (ApplicationContext, Android.Resource.Layout.SimpleListItem1, a);
-            lvDevices.SetAdapter(arrayAdapter);
-        }
-
-        #region GetMethod
+        #region GetMethods
         private void GetAllDevices(NetworkStream stream)
         {
             string d = "";
@@ -214,7 +198,6 @@ namespace CameraRemote
             for (int i = 0; i < a.Length-3; i++)
                 AllDevices.Add(a[i]);
             PhotosNumber = int.Parse(a[a.Length - 1]);
-           
         }
         public static string GetDeviceName()
         {
@@ -227,8 +210,7 @@ namespace CameraRemote
         private string[] GetDeviceIpRole(string s)
         {
             string[] data = s.Split(SEPERATOR);
-            for (int i = 2; data[1][i] != "'"[0]; i++)
-                device_ip += data[1][i];
+            device_ip = data[1];
             if (data.Length == 4)
                 return new string[] { data[0], data[2], data[3] };
             return new string[] { data[0], data[2]};
@@ -263,6 +245,21 @@ namespace CameraRemote
             btGetCon.Click += BtGetCon_Click;
             btSearch.Click += BtSearch_Click;
             lvDevices.ItemClick += LvDevices_ItemClick;
+        }
+        [Obsolete]
+        private void ChangeLayout()
+        {
+            //change the text and the OnClick of the button
+            btGetCon.SetX(40);
+            btGetCon.Text = "Take Picture";
+            btGetCon.Click -= BtGetCon_Click;
+            btGetCon.Click += BtnTakePic_Click;
+
+            //clear lvDevices items
+            List<string> a = new List<string>();
+            ArrayAdapter<string> arrayAdapter = new ArrayAdapter<string>
+                            (ApplicationContext, Android.Resource.Layout.SimpleListItem1, a);
+            lvDevices.SetAdapter(arrayAdapter);
         }
 
         #region sending
