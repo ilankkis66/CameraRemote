@@ -100,7 +100,7 @@ namespace CameraRemote
             while (s == "") s = ReceiveData(ServerStream);
             string[] IpRole = GetDeviceIpRole(s);
 
-            if (s.StartsWith("DADR") && IpRole[1] == "server")
+            if (IpRole[0] == "DADR" && IpRole[1] == "server")
             {
                 //connect to the device
                 TcpListener tcp_device = new TcpListener(devicePort);
@@ -113,6 +113,9 @@ namespace CameraRemote
                 Intent intent = pm.GetLaunchIntentForPackage("com.pas.webcam");
                 StartActivity(intent);
             }
+            else if(IpRole[0] == "DCNA")
+                Toast.MakeText(this, "the requested device connected to someone already", ToastLength.Long).Show();
+
         }
         [Obsolete]
         private void BtGetCon_Click(object sender, EventArgs e)
@@ -210,10 +213,14 @@ namespace CameraRemote
         private string[] GetDeviceIpRole(string s)
         {
             string[] data = s.Split(SEPERATOR);
-            device_ip = data[1];
-            if (data.Length == 4)
-                return new string[] { data[0], data[2], data[3] };
-            return new string[] { data[0], data[2]};
+            if (data[0] == "DADR")
+            {
+                device_ip = data[1];
+                if (data.Length == 4)
+                    return new string[] { data[0], data[2], data[3] };
+                return new string[] { data[0], data[2] };
+            }
+            return data;
         }
         public static string GetDeviceMacAddress()
         {

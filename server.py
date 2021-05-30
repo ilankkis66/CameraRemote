@@ -51,8 +51,7 @@ def add_photo(data, name, device):
     if name == "":
         return
     num = users_db.get_photos_number(name)[0]
-    with open(my_dir + "/photos/" + name + "/number " + str(num) + " " + device + ".png",
-              "wb") as f:
+    with open(my_dir + "/photos/" + name + "/number " + str(num) + " " + device + ".png", "wb") as f:
         f.write(data)
         users_db.add_photo(name, f.name)
 
@@ -62,18 +61,27 @@ def accept(server_socket):
     try:
         cs, a = server_socket.accept()
         data = receive(cs)
+
+        # add him to the connected devices dictionary
+        connected_devices[data] = [cs, a,"ilan"]
+        print(data, a)
+
+        # insert the client to the db
         if not users_db.check_exist(data):
             users_db.insert(data)
+
+        # create his folder for saving his pictures
         if not os.path.exists(my_dir + "/photos/" + data):
             os.mkdir(my_dir + "/photos/" + data)
-        connected_devices[data] = [cs, a]
-        print(data, a)
+
+        # send him all the connected clients
         to_send = ""
         for key in get_keys_list(connected_devices):
             if key != data:
                 to_send += key + SEPARATOR
         to_send += "ENDD" + SEPARATOR + "IMGN" + SEPARATOR + str(users_db.get_photos_number(data)[0])
         send(cs, to_send)
+
     except socket.error:
         pass
 
@@ -83,8 +91,10 @@ def main():
     server_socket.bind((IP, PORT))
     server_socket.listen(2)
     server_socket.settimeout(0.0001)
+
     if not os.path.exists(my_dir + "/photos"):
         os.mkdir(my_dir + "/photos")
+
     while True:
         accept(server_socket)
         try:
@@ -100,14 +110,19 @@ def handle_client(client_socket):
     data = receive(client_socket)
     name = get_key_by_address(client_socket)
 
-    if data and name != -1:
+    if data and name != -1: # if data was received and name is on the dictionary
         data = data.split(SEPARATOR)
         command, device = data[0], data[1]
         device_ip = str(connected_devices[device][1][0])
+
         if command == "COND":
-            send(client_socket, "DADR" + SEPARATOR + device_ip + SEPARATOR + "server")
-            send(connected_devices[device][0],
-                 "DADR" + SEPARATOR + str(connected_devices[name][1]) + SEPARATOR + "client" + SEPARATOR + name)
+            if len(connected_devices[device]) < 2:
+                # send each device the address of the other
+                send(client_socket, "DADR" + SEPARATOR + device_ip + SEPARATOR + "server")
+                send(connected_devices[device][0], "DADR" + SEPARATOR +
+                     str(connected_devices[name][1][0]) + SEPARATOR + "client" + SEPARATOR + name)
+            else:
+                send(client_socket, "DCNA"+SEPARATOR)
         elif command == "SPIC":
             try:
                 Lock.acquire()
@@ -118,7 +133,7 @@ def handle_client(client_socket):
                 Lock.release()
             except Exception as e:
                 print(e)
-        print(data.split(SEPARATOR))
+        print(data)
 
 
 if __name__ == '__main__':
