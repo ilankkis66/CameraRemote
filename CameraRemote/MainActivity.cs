@@ -49,6 +49,13 @@ namespace CameraRemote
             CheckInstallIpWebcam();
             //Search();
         }
+        protected override void OnDestroy()
+        {
+            base.OnDestroy();
+            SendData("DSCT", ServerStream);
+            ServerStream.Close();
+            DeviceStream.Close();
+        }
 
         public void setPermissitios()
         {
@@ -113,8 +120,8 @@ namespace CameraRemote
                 Intent intent = pm.GetLaunchIntentForPackage("com.pas.webcam");
                 StartActivity(intent);
             }
-            else if(IpRole[0] == "DCNA")
-                Toast.MakeText(this, "the requested device connected to someone already", ToastLength.Long).Show();
+            else if(IpRole[0] == "DUAA")
+                Toast.MakeText(this, "the requested device is unavailable", ToastLength.Long).Show();
 
         }
         [Obsolete]

@@ -63,7 +63,7 @@ def accept(server_socket):
         data = receive(cs)
 
         # add him to the connected devices dictionary
-        connected_devices[data] = [cs, a,"ilan"]
+        connected_devices[data] = [cs, a]
         print(data, a)
 
         # insert the client to the db
@@ -106,24 +106,28 @@ def main():
 
 
 def handle_client(client_socket):
-    global users_db
+    global users_db, connected_devices
     data = receive(client_socket)
     name = get_key_by_address(client_socket)
 
     if data and name != -1: # if data was received and name is on the dictionary
         data = data.split(SEPARATOR)
-        command, device = data[0], data[1]
-        device_ip = str(connected_devices[device][1][0])
+        command = data[0]
 
         if command == "COND":
-            if len(connected_devices[device]) < 2:
-                # send each device the address of the other
-                send(client_socket, "DADR" + SEPARATOR + device_ip + SEPARATOR + "server")
-                send(connected_devices[device][0], "DADR" + SEPARATOR +
-                     str(connected_devices[name][1][0]) + SEPARATOR + "client" + SEPARATOR + name)
+            device = data[1]
+            if device in get_keys_list(connected_devices):
+                device_ip = str(connected_devices[device][1][0])
+                if len(connected_devices[device]) < 2:
+                    # send each device the address of the other
+                    send(client_socket, "DADR" + SEPARATOR + device_ip + SEPARATOR + "server")
+                    send(connected_devices[device][0], "DADR" + SEPARATOR +
+                         str(connected_devices[name][1][0]) + SEPARATOR + "client" + SEPARATOR + name)
             else:
-                send(client_socket, "DCNA"+SEPARATOR)
+                send(client_socket, "DUAA"+SEPARATOR)
         elif command == "SPIC":
+            device = data[1]
+            device_ip = str(connected_devices[device][1][0])
             try:
                 Lock.acquire()
                 url = "http://" + device_ip + ":8080/photo.jpg"
@@ -133,6 +137,8 @@ def handle_client(client_socket):
                 Lock.release()
             except Exception as e:
                 print(e)
+        elif command == "DSCT":
+            del connected_devices[name]
         print(data)
 
 
