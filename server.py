@@ -13,6 +13,7 @@ users_db = SqlORM.Users()
 my_dir = os.getcwd()
 command_len = 4
 Lock = threading.Lock()
+SIZE_OF_SIZE = 10
 
 
 def receive(client_socket):
@@ -53,7 +54,7 @@ def add_photo(data, name, device):
     num = users_db.get_photos_number(name)[0]
     with open(my_dir + "/photos/" + name + "/number " + str(num) + " " + device + ".png", "wb") as f:
         f.write(data)
-        users_db.add_photo(name, f.name)
+        users_db.add_photo(name, f.name[len(my_dir):])
 
 
 def accept(server_socket):
@@ -77,7 +78,7 @@ def accept(server_socket):
         # send him all the connected clients
         to_send = ""
         for key in get_keys_list(connected_devices):
-            if key != data:
+            if key != data and len(connected_devices[device]) < 3:
                 to_send += key + SEPARATOR
         to_send += "ENDD" + SEPARATOR + "IMGN" + SEPARATOR + str(users_db.get_photos_number(data)[0])
         send(cs, to_send)
@@ -110,7 +111,7 @@ def handle_client(client_socket):
     data = receive(client_socket)
     name = get_key_by_address(client_socket)
 
-    if data and name != -1: # if data was received and name is on the dictionary
+    if data and name != -1:  # if data was received and name is on the dictionary
         data = data.split(SEPARATOR)
         command = data[0]
 
@@ -118,13 +119,13 @@ def handle_client(client_socket):
             device = data[1]
             if device in get_keys_list(connected_devices):
                 device_ip = str(connected_devices[device][1][0])
-                if len(connected_devices[device]) < 2:
+                if len(connected_devices[device]) < 3:
                     # send each device the address of the other
                     send(client_socket, "DADR" + SEPARATOR + device_ip + SEPARATOR + "server")
                     send(connected_devices[device][0], "DADR" + SEPARATOR +
                          str(connected_devices[name][1][0]) + SEPARATOR + "client" + SEPARATOR + name)
             else:
-                send(client_socket, "DUAA"+SEPARATOR)
+                send(client_socket, "DUAA" + SEPARATOR)
         elif command == "SPIC":
             device = data[1]
             device_ip = str(connected_devices[device][1][0])
@@ -137,6 +138,23 @@ def handle_client(client_socket):
                 Lock.release()
             except Exception as e:
                 print(e)
+        elif command == "GPCL":
+            file_list = users_db.get_files(name)
+            # send(client_socket, str(file_list))
+            file_list = str(file_list[0]).split("\n")
+            file_list.remove("")
+            # print(file_list)
+            for i in range(len(file_list)):
+                file_list[i] = file_list[i][len(my_dir + "/photos/" + name)+1:]
+            to_send = str(file_list)
+            send(client_socket, to_send[1:len(to_send)-1])
+            print(to_send[1:len(to_send)-1])
+        elif command == "GPIC":
+            file = data[1]
+            with open(my_dir + "/photos/" + name+ "/"+file, "rb") as f:
+                byte_data = f.read()
+                to_send = str(len(byte_data)).zfill(SIZE_OF_SIZE).encode() + SEPARATOR.encode()
+                client_socket.send(to_send + byte_data)
         elif command == "DSCT":
             del connected_devices[name]
         print(data)

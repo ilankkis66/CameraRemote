@@ -26,18 +26,18 @@ namespace CameraRemote
     [Activity(Label = "@string/app_name", Theme = "@style/AppTheme", MainLauncher = true)]
     public class MainActivity : AppCompatActivity
     {
-        Button btCamera, btGetCon, btSearch;
-        ListView lvDevices; ImageView iv;
+        Button btGetCon, btGetPic;
+        ListView lvDevices, lvPictures; ImageView iv;
 
         private const string SERVER_IP = "192.168.1.28";
         private const int SERVER_PORT = 8820; private const int CHUNK = 1024;
-        private const string SEPERATOR = "###";
-        private const int devicePort = 6666;
+        private const string SEPERATOR = "###"; private const int SIZE_OF_SIZE = 10;
 
-        private string device_ip = "";
+        private string device_ip = ""; private string DeviceName = "";
         private List<string> AllDevices = new List<string>(); private int PhotosNumber=0;
         private TcpClient ServerTCP; private NetworkStream ServerStream;
-        private TcpClient DeviceTcp; private NetworkStream DeviceStream; private string DeviceName="";
+        private new string[] FileList;
+
         [Obsolete]
         protected override void OnCreate(Bundle savedInstanceState)
         {
@@ -47,14 +47,13 @@ namespace CameraRemote
             InitWidgets();
             setPermissitios();
             CheckInstallIpWebcam();
-            //Search();
+            Search();
         }
         protected override void OnDestroy()
         {
             base.OnDestroy();
             SendData("DSCT", ServerStream);
             ServerStream.Close();
-            DeviceStream.Close();
         }
 
         public void setPermissitios()
@@ -109,12 +108,6 @@ namespace CameraRemote
 
             if (IpRole[0] == "DADR" && IpRole[1] == "server")
             {
-                //connect to the device
-                TcpListener tcp_device = new TcpListener(devicePort);
-                tcp_device.Start();
-                DeviceTcp = tcp_device.AcceptTcpClient();
-                DeviceStream = DeviceTcp.GetStream();
-
                 //open the stream
                 PackageManager pm = PackageManager;
                 Intent intent = pm.GetLaunchIntentForPackage("com.pas.webcam");
@@ -123,6 +116,26 @@ namespace CameraRemote
             else if(IpRole[0] == "DUAA")
                 Toast.MakeText(this, "the requested device is unavailable", ToastLength.Long).Show();
 
+        }
+        private void LvPictures_ItemClick(object sender, AdapterView.ItemClickEventArgs e)
+        {
+            SendData("GPIC" + SEPERATOR + FileList[(int)e.Id], ServerStream);
+            byte[] data = new byte[SIZE_OF_SIZE + SEPERATOR.Length];
+            ServerStream.Read(data);
+            string s = "";
+            for (int i = 0; i < SIZE_OF_SIZE; i++)
+                s += (char)data[i];
+            int len = int.Parse(s);
+            byte[] ByteData = new byte[len];
+            ServerStream.Read(ByteData);
+
+            //save file to local
+            string root = Android.OS.Environment.GetExternalStoragePublicDirectory(Android.OS.Environment.DirectoryPictures).ToString();
+            System.IO.File.WriteAllBytes(root + FileList[(int)e.Id], ByteData);
+
+            //show the image on the screen
+            Bitmap bt = BitmapFactory.DecodeByteArray(ByteData, 0, ByteData.Length);
+            iv.SetImageBitmap(bt);
         }
         [Obsolete]
         private void BtGetCon_Click(object sender, EventArgs e)
@@ -134,11 +147,6 @@ namespace CameraRemote
 
             if (s.StartsWith("DADR") && IpRole[1] == "client")
             {
-                //connect to the device
-                DeviceTcp = new TcpClient(device_ip, devicePort);
-                DeviceStream = DeviceTcp.GetStream();
-                DeviceName = IpRole[2];
-
                 //connect to the stream
                 var uri = Android.Net.Uri.Parse("http://" + device_ip + ":8080/browserfs.html");
                 var intent = new Intent(Intent.ActionView, uri);
@@ -148,15 +156,17 @@ namespace CameraRemote
             ChangeLayout();
         }
         [Obsolete]
-        private void BtSearch_Click(object sender, EventArgs e)
+        private void BtGetPic_Click(object sender, EventArgs e)
         {
-            ServerTCP = new TcpClient(SERVER_IP, SERVER_PORT);
-            ServerStream = ServerTCP.GetStream();
-            SendData(GetDeviceName() + " " + GetDeviceMacAddress(), ServerStream);
-            GetAllDevices(ServerStream);
-            ArrayAdapter<string> arrayAdapter = new ArrayAdapter<string>
-                            (ApplicationContext, Android.Resource.Layout.SimpleListItem1, AllDevices);
-            lvDevices.SetAdapter(arrayAdapter);
+            SendData("GPCL",ServerStream);
+            string data = ReceiveData(ServerStream);
+            FileList = data.Split(", ");
+            for (int i = 0; i < FileList.Length; i++)
+            {
+                FileList[i] = FileList[i].Substring(1, FileList[i].Length - 2);
+            }
+            ArrayAdapter<string> arrayAdapter = new ArrayAdapter<string>(ApplicationContext, Android.Resource.Layout.SimpleListItem1, FileList);
+            lvPictures.SetAdapter(arrayAdapter);
         }
         private void BtnTakePic_Click(object sender, EventArgs e)
         {
@@ -250,21 +260,22 @@ namespace CameraRemote
         private void InitWidgets()
         {
             lvDevices = (ListView)FindViewById(Resource.Id.lvDeviecs);
-            btCamera = (Button)FindViewById(Resource.Id.btnTakePic);
+            lvPictures = (ListView)FindViewById(Resource.Id.lvPictures);
             btGetCon = (Button)FindViewById(Resource.Id.btnGetCon);
-            btSearch = (Button)FindViewById(Resource.Id.btnSearch);
+            btGetPic = (Button)FindViewById(Resource.Id.btnGetPic);
             iv = (ImageView)FindViewById(Resource.Id.ivImage);
 
-            btCamera.Click += BtnTakePic_Click;
             btGetCon.Click += BtGetCon_Click;
-            btSearch.Click += BtSearch_Click;
+            btGetPic.Click += BtGetPic_Click;
             lvDevices.ItemClick += LvDevices_ItemClick;
+            lvPictures.ItemClick += LvPictures_ItemClick;
         }
+
+
         [Obsolete]
         private void ChangeLayout()
         {
             //change the text and the OnClick of the button
-            btGetCon.SetX(40);
             btGetCon.Text = "Take Picture";
             btGetCon.Click -= BtGetCon_Click;
             btGetCon.Click += BtnTakePic_Click;
@@ -290,7 +301,7 @@ namespace CameraRemote
             string s = "";
             try{stream.Read(data);}
             catch{return "";}
-            for (int i = 0; data[i] != 0; i++)
+            for (int i = 0; i < data.Length && data[i] != 0; i++)
                 s += (char)data[i];
             return s;
         }

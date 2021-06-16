@@ -2178,136 +2178,136 @@ namespace CameraRemote
 			public const int btnGetCon = 2131165222;
 			
 			// aapt resource value: 0x7F070027
-			public const int btnSearch = 2131165223;
+			public const int btnGetPic = 2131165223;
 			
 			// aapt resource value: 0x7F070028
-			public const int btnTakePic = 2131165224;
+			public const int buttonPanel = 2131165224;
 			
 			// aapt resource value: 0x7F070029
-			public const int buttonPanel = 2131165225;
+			public const int center = 2131165225;
 			
 			// aapt resource value: 0x7F07002A
-			public const int center = 2131165226;
+			public const int center_horizontal = 2131165226;
 			
 			// aapt resource value: 0x7F07002B
-			public const int center_horizontal = 2131165227;
+			public const int center_vertical = 2131165227;
 			
 			// aapt resource value: 0x7F07002C
-			public const int center_vertical = 2131165228;
+			public const int checkbox = 2131165228;
 			
 			// aapt resource value: 0x7F07002D
-			public const int checkbox = 2131165229;
+			public const int chronometer = 2131165229;
 			
 			// aapt resource value: 0x7F07002E
-			public const int chronometer = 2131165230;
+			public const int clip_horizontal = 2131165230;
 			
 			// aapt resource value: 0x7F07002F
-			public const int clip_horizontal = 2131165231;
+			public const int clip_vertical = 2131165231;
 			
 			// aapt resource value: 0x7F070030
-			public const int clip_vertical = 2131165232;
+			public const int collapseActionView = 2131165232;
 			
 			// aapt resource value: 0x7F070031
-			public const int collapseActionView = 2131165233;
+			public const int content = 2131165233;
 			
 			// aapt resource value: 0x7F070032
-			public const int content = 2131165234;
-			
-			// aapt resource value: 0x7F070033
-			public const int contentPanel = 2131165235;
+			public const int contentPanel = 2131165234;
 			
 			// aapt resource value: 0x7F070001
 			public const int CTRL = 2131165185;
 			
+			// aapt resource value: 0x7F070033
+			public const int custom = 2131165235;
+			
 			// aapt resource value: 0x7F070034
-			public const int custom = 2131165236;
+			public const int customPanel = 2131165236;
 			
 			// aapt resource value: 0x7F070035
-			public const int customPanel = 2131165237;
+			public const int decor_content_parent = 2131165237;
 			
 			// aapt resource value: 0x7F070036
-			public const int decor_content_parent = 2131165238;
+			public const int default_activity_button = 2131165238;
 			
 			// aapt resource value: 0x7F070037
-			public const int default_activity_button = 2131165239;
+			public const int disableHome = 2131165239;
 			
 			// aapt resource value: 0x7F070038
-			public const int disableHome = 2131165240;
+			public const int edit_query = 2131165240;
 			
 			// aapt resource value: 0x7F070039
-			public const int edit_query = 2131165241;
-			
-			// aapt resource value: 0x7F07003A
-			public const int end = 2131165242;
-			
-			// aapt resource value: 0x7F07003C
-			public const int expanded_menu = 2131165244;
+			public const int end = 2131165241;
 			
 			// aapt resource value: 0x7F07003B
-			public const int expand_activities_button = 2131165243;
+			public const int expanded_menu = 2131165243;
+			
+			// aapt resource value: 0x7F07003A
+			public const int expand_activities_button = 2131165242;
+			
+			// aapt resource value: 0x7F07003C
+			public const int fill = 2131165244;
 			
 			// aapt resource value: 0x7F07003D
-			public const int fill = 2131165245;
+			public const int fill_horizontal = 2131165245;
 			
 			// aapt resource value: 0x7F07003E
-			public const int fill_horizontal = 2131165246;
+			public const int fill_vertical = 2131165246;
 			
 			// aapt resource value: 0x7F07003F
-			public const int fill_vertical = 2131165247;
-			
-			// aapt resource value: 0x7F070040
-			public const int forever = 2131165248;
+			public const int forever = 2131165247;
 			
 			// aapt resource value: 0x7F070002
 			public const int FUNCTION = 2131165186;
 			
+			// aapt resource value: 0x7F070040
+			public const int group_divider = 2131165248;
+			
 			// aapt resource value: 0x7F070041
-			public const int group_divider = 2131165249;
+			public const int home = 2131165249;
 			
 			// aapt resource value: 0x7F070042
-			public const int home = 2131165250;
+			public const int homeAsUp = 2131165250;
 			
 			// aapt resource value: 0x7F070043
-			public const int homeAsUp = 2131165251;
+			public const int icon = 2131165251;
 			
 			// aapt resource value: 0x7F070044
-			public const int icon = 2131165252;
+			public const int icon_group = 2131165252;
 			
 			// aapt resource value: 0x7F070045
-			public const int icon_group = 2131165253;
+			public const int ifRoom = 2131165253;
 			
 			// aapt resource value: 0x7F070046
-			public const int ifRoom = 2131165254;
+			public const int image = 2131165254;
 			
 			// aapt resource value: 0x7F070047
-			public const int image = 2131165255;
+			public const int info = 2131165255;
 			
 			// aapt resource value: 0x7F070048
-			public const int info = 2131165256;
+			public const int italic = 2131165256;
 			
 			// aapt resource value: 0x7F070049
-			public const int italic = 2131165257;
+			public const int ivImage = 2131165257;
 			
 			// aapt resource value: 0x7F07004A
-			public const int ivImage = 2131165258;
+			public const int left = 2131165258;
 			
 			// aapt resource value: 0x7F07004B
-			public const int left = 2131165259;
+			public const int line1 = 2131165259;
 			
 			// aapt resource value: 0x7F07004C
-			public const int line1 = 2131165260;
+			public const int line3 = 2131165260;
 			
 			// aapt resource value: 0x7F07004D
-			public const int line3 = 2131165261;
+			public const int listMode = 2131165261;
 			
 			// aapt resource value: 0x7F07004E
-			public const int listMode = 2131165262;
+			public const int list_item = 2131165262;
 			
 			// aapt resource value: 0x7F07004F
-			public const int list_item = 2131165263;
+			public const int lvDeviecs = 2131165263;
 			
 			// aapt resource value: 0x7F070050
-			public const int lvDeviecs = 2131165264;
+			public const int lvPictures = 2131165264;
 			
 			// aapt resource value: 0x7F070051
 			public const int message = 2131165265;

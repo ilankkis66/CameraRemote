@@ -5,28 +5,20 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/bg">
-    <Button 
-        android:id="@+id/btnTakePic"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_x="150dp"
-        android:layout_y="70dp"
-        android:text="camera"
-        tools:ignore="HardcodedText"/> ;camera
     <Button
-        android:id="@+id/btnSearch"
+        android:id="@+id/btnGetPic"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_x="280dp"
+        android:layout_x="250dp"
         android:layout_y="120dp"
-        android:text="search"
-        tools:ignore="HardcodedText" /> ;search
+        android:text="Get Picture"
+        tools:ignore="HardcodedText" /> ;get pic
     <Button
         android:id="@+id/btnGetCon"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_x="125dp"
-        android:layout_y="450dp"
+        android:layout_y="250dp"
         android:text="Get Connection"
         tools:ignore="HardcodedText"/> ;GetCon
     <ListView
@@ -34,7 +26,13 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_x="0dp"
-        android:layout_y="200dp"/> ;lvDevices
+        android:layout_y="0dp"/> ;lvDevices
+    <ListView
+        android:id="@+id/lvPictures"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_x="0dp"
+        android:layout_y="300dp"/> ;lvDevices
     <ImageView
         android:id="@+id/ivImage"
         android:layout_width="match_parent"
@@ -43,4 +41,5 @@
         android:layout_y="0dp"
         android:contentDescription="description"
         tools:ignore="HardcodedText" /> ;iv
+
 </AbsoluteLayout>
