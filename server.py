@@ -54,7 +54,7 @@ def add_photo(data, name, device):
     num = users_db.get_photos_number(name)[0]
     with open(my_dir + "/photos/" + name + "/number " + str(num) + " " + device + ".png", "wb") as f:
         f.write(data)
-        users_db.add_photo(name, f.name[len(my_dir):])
+        users_db.add_photo(name, f.name)
 
 
 def accept(server_socket):
@@ -140,18 +140,15 @@ def handle_client(client_socket):
                 print(e)
         elif command == "GPCL":
             file_list = users_db.get_files(name)
-            # send(client_socket, str(file_list))
             file_list = str(file_list[0]).split("\n")
             file_list.remove("")
-            # print(file_list)
             for i in range(len(file_list)):
                 file_list[i] = file_list[i][len(my_dir + "/photos/" + name)+1:]
             to_send = str(file_list)
             send(client_socket, to_send[1:len(to_send)-1])
-            print(to_send[1:len(to_send)-1])
         elif command == "GPIC":
             file = data[1]
-            with open(my_dir + "/photos/" + name+ "/"+file, "rb") as f:
+            with open(my_dir + "/photos/" + name + "/"+file, "rb") as f:
                 byte_data = f.read()
                 to_send = str(len(byte_data)).zfill(SIZE_OF_SIZE).encode() + SEPARATOR.encode()
                 client_socket.send(to_send + byte_data)

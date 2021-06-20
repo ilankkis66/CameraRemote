@@ -122,13 +122,18 @@ namespace CameraRemote
             SendData("GPIC" + SEPERATOR + FileList[(int)e.Id], ServerStream);
             byte[] data = new byte[SIZE_OF_SIZE + SEPERATOR.Length];
             ServerStream.Read(data);
+
+            //get the len of the image
             string s = "";
             for (int i = 0; i < SIZE_OF_SIZE; i++)
                 s += (char)data[i];
             int len = int.Parse(s);
-            byte[] ByteData = new byte[len];
-            ServerStream.Read(ByteData);
 
+            //read the bytes
+            byte[] ByteData = new byte[len];
+            for (int i = 0; i < len;)
+                i += ServerStream.Read(ByteData,i,len-i);
+            
             //save file to local
             string root = Android.OS.Environment.GetExternalStoragePublicDirectory(Android.OS.Environment.DirectoryPictures).ToString();
             System.IO.File.WriteAllBytes(root + FileList[(int)e.Id], ByteData);
@@ -159,12 +164,14 @@ namespace CameraRemote
         private void BtGetPic_Click(object sender, EventArgs e)
         {
             SendData("GPCL",ServerStream);
+
+            //receive the file list
             string data = ReceiveData(ServerStream);
             FileList = data.Split(", ");
             for (int i = 0; i < FileList.Length; i++)
-            {
                 FileList[i] = FileList[i].Substring(1, FileList[i].Length - 2);
-            }
+
+            //show the list on the screen
             ArrayAdapter<string> arrayAdapter = new ArrayAdapter<string>(ApplicationContext, Android.Resource.Layout.SimpleListItem1, FileList);
             lvPictures.SetAdapter(arrayAdapter);
         }
@@ -269,6 +276,7 @@ namespace CameraRemote
             btGetPic.Click += BtGetPic_Click;
             lvDevices.ItemClick += LvDevices_ItemClick;
             lvPictures.ItemClick += LvPictures_ItemClick;
+
         }
 
 
