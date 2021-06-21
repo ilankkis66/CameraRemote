@@ -143,7 +143,7 @@ def handle_client(client_socket):
             file_list = str(file_list[0]).split("\n")
             file_list.remove("")
             for i in range(len(file_list)):
-                file_list[i] = file_list[i][len(my_dir + "/photos/" + name)+1:]
+                file_list[i] = file_list[i][file_list[i].find("/n")+1:]
             to_send = str(file_list)
             send(client_socket, to_send[1:len(to_send)-1])
         elif command == "GPIC":

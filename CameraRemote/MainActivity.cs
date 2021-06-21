@@ -117,6 +117,8 @@ namespace CameraRemote
                 Toast.MakeText(this, "the requested device is unavailable", ToastLength.Long).Show();
 
         }
+
+        [Obsolete]
         private void LvPictures_ItemClick(object sender, AdapterView.ItemClickEventArgs e)
         {
             SendData("GPIC" + SEPERATOR + FileList[(int)e.Id], ServerStream);
@@ -137,10 +139,19 @@ namespace CameraRemote
             //save file to local
             string root = Android.OS.Environment.GetExternalStoragePublicDirectory(Android.OS.Environment.DirectoryPictures).ToString();
             System.IO.File.WriteAllBytes(root + FileList[(int)e.Id], ByteData);
+            Toast.MakeText(this, "image was saved in the gallery", ToastLength.Long).Show();
 
             //show the image on the screen
-            Bitmap bt = BitmapFactory.DecodeByteArray(ByteData, 0, ByteData.Length);
-            iv.SetImageBitmap(bt);
+            //Bitmap bt = BitmapFactory.DecodeByteArray(ByteData, 0, ByteData.Length);
+            //iv.SetImageBitmap(bt);
+
+            //covering the file list
+            ArrayAdapter<string> arrayAdapter = new ArrayAdapter<string>(ApplicationContext, Android.Resource.Layout.SimpleListItem1, new string[0]);
+            lvPictures.SetAdapter(arrayAdapter);
+
+            //showing the buttons
+            btGetCon.Visibility = Android.Views.ViewStates.Visible;
+            btGetPic.Visibility = Android.Views.ViewStates.Visible;
         }
         [Obsolete]
         private void BtGetCon_Click(object sender, EventArgs e)
@@ -174,6 +185,10 @@ namespace CameraRemote
             //show the list on the screen
             ArrayAdapter<string> arrayAdapter = new ArrayAdapter<string>(ApplicationContext, Android.Resource.Layout.SimpleListItem1, FileList);
             lvPictures.SetAdapter(arrayAdapter);
+
+            //covering the buttons
+            btGetCon.Visibility = Android.Views.ViewStates.Invisible;
+            btGetPic.Visibility = Android.Views.ViewStates.Invisible;
         }
         private void BtnTakePic_Click(object sender, EventArgs e)
         {
