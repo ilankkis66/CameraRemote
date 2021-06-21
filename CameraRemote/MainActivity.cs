@@ -174,13 +174,17 @@ namespace CameraRemote
         [Obsolete]
         private void BtGetPic_Click(object sender, EventArgs e)
         {
-            SendData("GPCL",ServerStream);
+            if(FileList == null)
+            {
+                SendData("GPCL", ServerStream);
 
-            //receive the file list
-            string data = ReceiveData(ServerStream);
-            FileList = data.Split(", ");
-            for (int i = 0; i < FileList.Length; i++)
-                FileList[i] = FileList[i].Substring(1, FileList[i].Length - 2);
+                //receive the file list
+                string data = ReceiveData(ServerStream);
+                FileList = data.Split(", ");
+                for (int i = 0; i < FileList.Length; i++)
+                    FileList[i] = FileList[i].Substring(1, FileList[i].Length - 2);
+
+            }
 
             //show the list on the screen
             ArrayAdapter<string> arrayAdapter = new ArrayAdapter<string>(ApplicationContext, Android.Resource.Layout.SimpleListItem1, FileList);
